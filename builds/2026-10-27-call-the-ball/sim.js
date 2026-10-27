@@ -41,13 +41,13 @@
     { id: 'xwind', name: 'Crosswind', tod: 'day', brief: 'A few knots of crosswind push you off the centreline. Hold your lineup.',
       turb: 0.35, burble: 0.3, cross: 2.6, heave: 0.08, pitch: 0.03, startErr: 1.2, wo: 1.2 },
     { id: 'chop', name: 'Choppy seas', tod: 'day', brief: 'Gusty air and a moving deck. Burble behind the island will try to settle you at the ramp.',
-      turb: 0.7, burble: 0.9, cross: -1.5, heave: 0.18, pitch: 0.08, startErr: 1.6 },
+      turb: 0.6, burble: 0.65, cross: -1.5, heave: 0.18, pitch: 0.08, startErr: 1.6 },
     { id: 'dusk', name: 'Dusk recovery', tod: 'dusk', brief: 'Sun on the horizon, deck in shadow. Trust the ball, not the deck.',
-      turb: 0.6, burble: 1.0, cross: 2.0, heave: 0.25, pitch: 0.12, startErr: 1.8 },
+      turb: 0.55, burble: 0.75, cross: 2.0, heave: 0.25, pitch: 0.12, startErr: 1.8 },
     { id: 'case3', name: 'Case III - Night', tod: 'night', brief: 'Black ocean, no horizon. Pitching deck. Only the lights and the ball.',
-      turb: 0.8, burble: 1.3, cross: -2.4, heave: 0.35, pitch: 0.16, startErr: 2.0 },
+      turb: 0.65, burble: 0.9, cross: -2.4, heave: 0.35, pitch: 0.16, startErr: 2.0 },
     { id: 'bingo', name: 'Bingo fuel', tod: 'night', brief: 'Last pass. Fuel for one look and a bolter. Make it count.',
-      turb: 1.0, burble: 1.5, cross: 2.8, heave: 0.4, pitch: 0.2, startErr: 2.2 }
+      turb: 0.8, burble: 1.05, cross: 2.8, heave: 0.4, pitch: 0.2, startErr: 2.2 }
   ];
 
   function rng(seed) {

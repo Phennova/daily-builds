@@ -50,7 +50,7 @@ code, .mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
 h1 { margin: .1em 0 .2em; font-size: clamp(34px, 9vw, 58px); letter-spacing: .08em; line-height: 1; color: #ffb12e;
   text-shadow: 0 0 24px rgba(255,177,46,.35); }
 h2 { margin: .1em 0 .4em; font-size: 24px; }
-.kicker { margin: 0; text-transform: uppercase; letter-spacing: .14em; font-size: 12px; color: #8fb3cc; }
+.kicker { margin: 0; text-transform: uppercase; letter-spacing: .14em; font-size: 12px; color: #b5d3e8; }
 .lead { color: #cfdbe6; }
 .small { font-size: 13px; color: #9fb4c6; }
 .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
@@ -98,3 +98,7 @@ h2 { margin: .1em 0 .4em; font-size: 24px; }
 @media (prefers-reduced-motion: reduce) {
   #subtitle, #alert { transition: none; }
 }
+
+.row button { flex: 1 1 140px; }
+.row #btnCruise { flex-basis: 100%; }
+.small { color: #b9c4cc; }

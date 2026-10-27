@@ -119,7 +119,7 @@
   // ---------------- Palettes ----------------
   var PAL = {
     day: { skyTop: '#2f6fb3', skyHor: '#cfe3f1', seaHor: '#3f6280', seaNear: '#0c2a44', deck: '#6d7278', hull: '#3a4048',
-      hullDark: '#2a2f36', mark: 'rgba(250,250,245,.95)', island: '#7a8089', wake: 'rgba(215,232,242,.05)', jets: '#3a3f46', clouds: 'rgba(255,255,255,.75)', cap: 'rgba(235,245,255,.55)', lights: 0.25, stars: 0 },
+      hullDark: '#2a2f36', mark: 'rgba(250,250,245,.95)', island: '#7a8089', wake: 'rgba(215,232,242,.04)', jets: '#3a3f46', clouds: 'rgba(255,255,255,.75)', cap: 'rgba(235,245,255,.55)', lights: 0.25, stars: 0 },
     dusk: { skyTop: '#1c2547', skyHor: '#f29a5a', seaHor: '#6a4c52', seaNear: '#0e1a2b', deck: '#3a3d44', hull: '#22252c',
       hullDark: '#181a20', mark: 'rgba(235,230,220,.7)', island: '#3a3e46', wake: 'rgba(240,200,170,.05)', jets: '#1c1e23', clouds: 'rgba(255,170,120,.45)', cap: 'rgba(255,215,180,.4)', lights: 0.8, stars: 0.25, sun: true },
     night: { skyTop: '#02040a', skyHor: '#0c1626', seaHor: '#08101c', seaNear: '#010204', deck: '#15171b', hull: '#0b0d10',
@@ -217,11 +217,15 @@
     var st = ship2deck(0, 0);
     var ax = -SHIP_AXIS[0], az = -SHIP_AXIS[1], nx = -az, nz = ax;
     var segs = [[0, 15], [140, 20], [420, 28], [900, 34]];
-    for (var k = 0; k < segs.length - 1; k++) {
-      var a0 = segs[k], a1 = segs[k + 1];
-      g.globalAlpha = 1 - k / (segs.length - 1) * 0.9;
-      fillPoly([[st[0] + ax * a0[0] + nx * a0[1], wy, st[1] + az * a0[0] + nz * a0[1]], [st[0] + ax * a0[0] - nx * a0[1], wy, st[1] + az * a0[0] - nz * a0[1]],
-        [st[0] + ax * a1[0] - nx * a1[1], wy, st[1] + az * a1[0] - nz * a1[1]], [st[0] + ax * a1[0] + nx * a1[1], wy, st[1] + az * a1[0] + nz * a1[1]]], P.wake);
+    var widths = [1, 0.7, 0.45, 0.22];
+    for (var wi = 0; wi < widths.length; wi++) {
+      var ws = widths[wi];
+      for (var k = 0; k < segs.length - 1; k++) {
+        var a0 = segs[k], a1 = segs[k + 1];
+        g.globalAlpha = (1 - k / (segs.length - 1) * 0.9) * 0.7;
+        fillPoly([[st[0] + ax * a0[0] + nx * a0[1] * ws, wy, st[1] + az * a0[0] + nz * a0[1] * ws], [st[0] + ax * a0[0] - nx * a0[1] * ws, wy, st[1] + az * a0[0] - nz * a0[1] * ws],
+          [st[0] + ax * a1[0] - nx * a1[1] * ws, wy, st[1] + az * a1[0] - nz * a1[1] * ws], [st[0] + ax * a1[0] + nx * a1[1] * ws, wy, st[1] + az * a1[0] + nz * a1[1] * ws]], P.wake);
+      }
     }
     g.globalAlpha = 1;
     // foam: flecks along the wake, fixed in the water (they stream aft)
@@ -344,7 +348,7 @@
       g.fillRect(x0 + 4, y0 + h * 0.2, 5, h * 0.6); g.fillRect(x0 + w - 9, y0 + h * 0.2, 5, h * 0.6);
     }
     if (ls.cut) for (k = -1; k <= 1; k++) dot(cx + k * w * 0.06, y0 + h * 0.08, lr * 0.9, '#33ff77');
-    g.fillStyle = 'rgba(200,220,235,.7)'; g.font = '10px ui-monospace, Menlo, Consolas, monospace';
+    g.fillStyle = 'rgba(225,238,248,.95)'; g.font = '600 11px ui-monospace, Menlo, Consolas, monospace';
     g.fillText('LENS', x0 + 6, y0 + h - 5);
     g.restore();
   }
@@ -391,7 +395,7 @@
     g.fillRect(gx, gy0 + gh * (1 - ts), 8, gh * ts);
     g.beginPath(); g.moveTo(gx - 8, gy0 + gh * (1 - th)); g.lineTo(gx - 1, gy0 + gh * (1 - th)); g.lineWidth = 3; g.stroke();
     g.lineWidth = 1; g.beginPath(); g.moveTo(gx - 3, gy0 + gh * (1 - C.TRIM)); g.lineTo(gx + 11, gy0 + gh * (1 - C.TRIM)); g.setLineDash([2, 2]); g.stroke(); g.setLineDash([]);
-    g.textAlign = 'center'; g.font = '10px ui-monospace, Menlo, Consolas, monospace';
+    g.textAlign = 'center'; g.font = '700 12px ui-monospace, Menlo, Consolas, monospace';
     g.fillText(th > 0.97 ? 'MIL' : 'PWR', gx + 4, gy0 + gh + 14);
     g.globalAlpha = 1;
     g.restore();
