@@ -14,7 +14,7 @@ Play: https://phennova.github.io/daily-builds/builds/2026-10-27-call-the-ball/
   Passes appear on a greenie board and in a cruise GPA.
 
 ## Controls
-- Touch: drag anywhere; up/down = power, left/right = lineup. Double-fill the stick up for wave-off.
+- Touch: drag anywhere; up/down = power, left/right = lineup. Drag up hard for a wave-off.
 - Keyboard: W/S or Up/Down = power, A/D or Left/Right = lineup, Space = full power, P = pause, M = mute.
 - Mouse: drag like touch.
 
