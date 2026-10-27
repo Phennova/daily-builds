@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b1622">
+<title>Call the Ball - F/A-18 carrier landing</title>
+<meta name="description" content="Fly the last 18 seconds of a Super Hornet carrier approach on the meatball. Graded by the LSO in real shorthand.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="view" aria-label="Cockpit view of the carrier approach"></canvas>
+
+<div id="topbar">
+  <span id="passinfo"></span>
+  <span class="spacer"></span>
+  <button id="btnVoice" class="icon" title="LSO voice (speech synthesis)" aria-label="Toggle LSO voice">VOICE</button>
+  <button id="btnMute" class="icon" title="Sound on/off (M)" aria-label="Toggle sound">SOUND</button>
+  <button id="btnPause" class="icon" title="Pause (P)" aria-label="Pause">II</button>
+</div>
+
+<div id="subtitle" aria-live="polite"></div>
+<div id="alert"></div>
+<div id="thumb"><div id="thumbDot"></div></div>
+
+<!-- Title -->
+<section id="scrTitle" class="screen show">
+  <div class="panel">
+    <p class="kicker">F/A-18E Super Hornet &middot; the last 18 seconds</p>
+    <h1>CALL THE BALL</h1>
+    <p class="lead">Night or day, every Navy carrier landing ends the same way: about 18 seconds in "the groove",
+      flying a single amber light on the deck while the Landing Signal Officer watches and grades every pass.</p>
+    <div class="row">
+      <button id="btnCruise" class="primary">Start cruise &middot; 6 passes</button>
+      <button id="btnPractice">Practice</button>
+      <button id="btnHow">How to fly</button>
+    </div>
+    <p id="bestLine" class="small"></p>
+  </div>
+</section>
+
+<!-- How to -->
+<section id="scrHow" class="screen">
+  <div class="panel wide">
+    <h2>How to fly the ball</h2>
+    <div class="lenses">
+      <figure><svg viewBox="0 0 120 70" class="lens"><use href="#lensBase"/><rect x="52" y="10" width="16" height="10" rx="3" fill="#ffb12e"/></svg><figcaption><b>High</b><br>ball above the green bars: ease power</figcaption></figure>
+      <figure><svg viewBox="0 0 120 70" class="lens"><use href="#lensBase"/><rect x="52" y="30" width="16" height="10" rx="3" fill="#ffb12e"/></svg><figcaption><b>Centred</b><br>on the 3.5&deg; glideslope to the 3-wire</figcaption></figure>
+      <figure><svg viewBox="0 0 120 70" class="lens"><use href="#lensBase"/><rect x="52" y="52" width="16" height="10" rx="3" fill="#ff3030"/></svg><figcaption><b>Low / red</b><br>dangerously low: POWER, now</figcaption></figure>
+    </div>
+    <ul class="how">
+      <li><b>Power is your glideslope.</b> More throttle = less sink. The engines take about a second to respond, so make small corrections and wait. Chasing the ball makes you porpoise.</li>
+      <li><b>Lineup.</b> The landing area is angled 9&deg; from the ship's heading, so as the ship steams ahead the centreline creeps to the right. Keep nudging right to stay on it.</li>
+      <li><b>Listen to Paddles</b> (the LSO): "Power", "Right for lineup", "Easy with it". If you hear <b>"Wave off!"</b> go to full power immediately. Landing after a wave-off is a Cut.</li>
+      <li><b>Grades:</b> OK (4 pts), Fair (3), Bolter (2.5), No Grade (2), Wave-off (1), Cut (0). The LSO writes comments like <code>(LO)IC</code> = a little low in close.</li>
+    </ul>
+    <div class="controls">
+      <div><b>Touch / mouse:</b> press anywhere and drag. Up/down = throttle (stays where you leave it). Left/right = bank (springs back).</div>
+      <div><b>Keyboard:</b> W/S or &uarr;/&darr; throttle, A/D or &larr;/&rarr; bank, Space = full power, P pause, M mute.</div>
+    </div>
+    <div class="row"><button id="btnHowBack" class="primary">Got it</button></div>
+  </div>
+</section>
+
+<!-- Practice picker -->
+<section id="scrPractice" class="screen">
+  <div class="panel">
+    <h2>Practice</h2>
+    <p class="small">Pick conditions. Practice passes are not saved to the cruise board.</p>
+    <div id="levelList" class="levels"></div>
+    <div class="row"><button id="btnPracticeBack">Back</button></div>
+  </div>
+</section>
+
+<!-- Pre-pass brief -->
+<section id="scrBrief" class="screen">
+  <div class="panel">
+    <p class="kicker" id="briefKicker"></p>
+    <h2 id="briefName"></h2>
+    <p id="briefText" class="lead"></p>
+    <p class="small">You start in the groove, about 0.6 nm behind the ship, on speed. Fly the ball, keep the lineup.</p>
+    <div class="row"><button id="btnFly" class="primary">Call the ball</button></div>
+  </div>
+</section>
+
+<!-- Debrief -->
+<section id="scrDebrief" class="screen">
+  <div class="panel wide">
+    <p class="kicker">LSO debrief</p>
+    <div class="gradeRow">
+      <div id="gradeTile" class="tile big"></div>
+      <div>
+        <div id="gradeName" class="gradeName"></div>
+        <div id="gradeDesc" class="small"></div>
+        <code id="shorthand" class="shorthand"></code>
+      </div>
+    </div>
+    <ul id="comments" class="comments"></ul>
+    <p id="tip" class="tip"></p>
+    <div id="boardWrap"><div class="small">Greenie board</div><div id="board" class="board"></div></div>
+    <div class="row"><button id="btnNext" class="primary">Next pass</button><button id="btnQuit">Title</button></div>
+  </div>
+</section>
+
+<!-- Cruise summary -->
+<section id="scrSummary" class="screen">
+  <div class="panel wide">
+    <p class="kicker">Cruise complete</p>
+    <h2 id="sumTitle"></h2>
+    <p id="sumText" class="lead"></p>
+    <div id="sumBoard" class="board"></div>
+    <div class="row"><button id="btnAgain" class="primary">Another cruise</button><button id="btnSumTitle">Title</button></div>
+  </div>
+</section>
+
+<!-- Pause -->
+<section id="scrPause" class="screen">
+  <div class="panel">
+    <h2>Paused</h2>
+    <div class="row"><button id="btnResume" class="primary">Resume</button><button id="btnAbort">Quit to title</button></div>
+  </div>
+</section>
+
+<div id="selftest" hidden></div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="lensBase">
+      <rect x="40" y="4" width="40" height="62" rx="4" fill="#111" stroke="#444"/>
+      <g fill="#2bff6a"><circle cx="8" cy="35" r="4"/><circle cx="20" cy="35" r="4"/><circle cx="32" cy="35" r="4"/>
+      <circle cx="88" cy="35" r="4"/><circle cx="100" cy="35" r="4"/><circle cx="112" cy="35" r="4"/></g>
+    </g>
+  </defs>
+</svg>
+
+<script src="sim.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

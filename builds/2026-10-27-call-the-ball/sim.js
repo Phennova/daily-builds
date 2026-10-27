@@ -22,11 +22,11 @@
     WATER_Y: -20,             // flight deck ~20 m above the sea
     DECK_HALF: 12,            // landing area half-width
     WIRES: [-18, -6, 6, 18],  // wire positions (hook engages the first wire ahead of touchdown)
-    CELL: 0.15 * DEG,         // one IFLOLS cell
+    CELL: 0.22 * DEG,         // one IFLOLS cell (game-tuned; real lens is a little tighter)
     TRIM: 0.55,               // throttle that flies the glideslope at nominal closure
     GAIN: 14,                 // m/s of vertical speed per unit thrust
-    SPOOL: 0.45,              // engine lag (s)
-    VLAG: 1.1,                // vertical speed response lag (s)
+    SPOOL: 0.3,               // engine lag (s)
+    VLAG: 0.65,               // vertical speed response lag (s)
     BANK_MAX: 14 * DEG,
     BANK_LAG: 0.35,
     HOOK_EYE: 4.2,            // pilot eye above hook (m)
@@ -37,9 +37,9 @@
   // ---- Conditions for each pass of the cruise ----
   var LEVELS = [
     { id: 'case1', name: 'Case I - Blue water', tod: 'day', brief: 'Clear day, calm sea, steady 25 kt over the deck. Learn the picture.',
-      turb: 0, burble: 0, cross: 0, heave: 0, pitch: 0, startErr: 0.6 },
+      turb: 0, burble: 0, cross: 0, heave: 0, pitch: 0, startErr: 0.6, wo: 1.4 },
     { id: 'xwind', name: 'Crosswind', tod: 'day', brief: 'A few knots of crosswind push you off the centreline. Hold your lineup.',
-      turb: 0.35, burble: 0.3, cross: 2.6, heave: 0.08, pitch: 0.03, startErr: 1.2 },
+      turb: 0.35, burble: 0.3, cross: 2.6, heave: 0.08, pitch: 0.03, startErr: 1.2, wo: 1.2 },
     { id: 'chop', name: 'Choppy seas', tod: 'day', brief: 'Gusty air and a moving deck. Burble behind the island will try to settle you at the ramp.',
       turb: 0.7, burble: 0.9, cross: -1.5, heave: 0.18, pitch: 0.08, startErr: 1.6 },
     { id: 'dusk', name: 'Dusk recovery', tod: 'dusk', brief: 'Sun on the horizon, deck in shadow. Trust the ball, not the deck.',
@@ -102,14 +102,18 @@
   function burble(s, x) {
     // downdraft behind the island, strongest ~100 m before touchdown
     if (x < -260 || x > -10) return 0;
-    var u = (x + 110) / 90;
-    return -s.L.burble * Math.exp(-u * u) * 1.6;
+    var u = (x + 120) / 110;
+    return -s.L.burble * Math.exp(-u * u) * 1.0;
   }
 
-  function ballCells(s) {
-    var d = Math.max(Math.hypot(-s.x, s.z), 5);
+  // Glideslope deviation in lens cells. The real lens is angular, so it gets very twitchy in close;
+  // a distance floor keeps it readable (display) and fair (LSO judgement / grading).
+  function devCells(s, floor) {
+    var d = Math.max(Math.hypot(-s.x, s.z), floor || 5);
     return Math.atan2(s.y - gsHeight(s.x), d) / C.CELL;
   }
+  function ballCells(s) { return devCells(s, 120); }
+  function lsoCells(s) { return devCells(s, 220); }
 
   function lineupTol(x) { return 1.6 + Math.max(0, -x) * 0.006; }
 
@@ -137,10 +141,10 @@
     if (s.phase === 'bolter') {
       s.x += s.vx * dt;
       s.y = deckY(s, s.x);
-      if (th >= 0.85) s.bolterPower += dt;
+      if (th >= 0.8) s.bolterPower += dt;
       if (s.x >= C.END_X) {
-        if (s.bolterPower >= 0.5) { s.phase = 'waveoff'; s.vy = 2; s.flyaway = true; }
-        else { crash(s, 'Bolter without power: dribbled off the angle'); }
+        if (s.bolterPower >= 0.25) { s.phase = 'waveoff'; s.vy = 2; s.flyaway = !s.touchAndGo; }
+        else { crash(s, (s.touchAndGo ? 'Touch-and-go' : 'Bolter') + ' without power: dribbled off the angle'); }
       }
       return s;
     }
@@ -148,6 +152,7 @@
     // Airborne (groove or waveoff)
     var tb = turbulence(s);
     var vyT = C.VY_TRIM + (s.thrust - C.TRIM) * C.GAIN + tb.v + burble(s, s.x);
+    if (s.waveoffAt >= 0 && th >= 0.9) vyT += 3; // wave-off technique: full power and rotate
     s.vy += (vyT - s.vy) * Math.min(1, dt / C.VLAG);
     s.phi += (bank * C.BANK_MAX - s.phi) * Math.min(1, dt / C.BANK_LAG);
     s.psi += C.G * Math.tan(s.phi) / C.VA * dt;
@@ -155,6 +160,7 @@
     s.vx = C.VA * Math.cos(s.psi) - C.WOD * Math.cos(C.ANGLE_DECK);
     s.vz = C.VA * Math.sin(s.psi) - C.WOD * Math.sin(C.ANGLE_DECK) + s.L.cross + tb.l * 0.6;
 
+    if (s.waveoffAt >= 0 && th >= 0.8) s.woResp = true;
     var px = s.x, py = s.y;
     s.x += s.vx * dt; s.y += s.vy * dt; s.z += s.vz * dt;
 
@@ -184,7 +190,7 @@
   }
 
   function sample(s) {
-    var b = ballCells(s);
+    var b = lsoCells(s);
     s.samples.push({ x: s.x, b: b, z: s.z, vy: s.vy, vz: s.vz, thr: s.throttle, vyerr: s.vy - C.VY_TRIM });
   }
 
@@ -210,6 +216,13 @@
     if (w && sink > -0.8) w = w + 1; // flat, floating touchdown: hook skips a wire
     if (w > 4) w = 0;
     if (s.waveoffAt >= 0) {
+      if (s.woResp) {
+        // answered the wave-off but the jet still touched down: touch-and-go, keep the power on
+        s.outcome = { kind: 'waveoff', ordered: true };
+        s.phase = 'bolter'; s.bolterPower = 0.3; s.touchAndGo = true;
+        pushEvent(s, { type: 'touchgo' });
+        return;
+      }
       s.outcome = { kind: 'cut', why: 'Landed after a wave-off', wire: w };
     }
     if (w) {
@@ -250,14 +263,14 @@
     if (l.ballCalled && !l.rogered && t > 2.6) { l.rogered = true; say(s, 'Roger ball.', 'roger'); return; }
     if (!l.rogered || s.phase !== 'groove') return;
 
-    var b = ballCells(s), tol = lineupTol(s.x), x = s.x;
-    // wave-off decision (window closes ~0.8 s before the ramp)
-    if (x < C.RAMP_X - 30) {
-      var wo = '';
-      if (b < -3.2 && x > -600) wo = 'low';
-      else if (b < -2.2 && x > -180) wo = 'low';
-      else if (Math.abs(s.z) > Math.max(9, tol * 3.6) && x > -500) wo = 'lineup';
-      else if (b > 4.5 && x > -260) wo = 'high';
+    var b = lsoCells(s), tol = lineupTol(s.x), x = s.x;
+    // wave-off decision (window closes about a second before the ramp)
+    if (x < C.RAMP_X - 55) {
+      var wo = '', k = s.L.wo || 1;
+      if (b < -3.4 * k && x > -650) wo = 'low';
+      else if (b < -2.6 * k && x > -200) wo = 'low';
+      else if (Math.abs(s.z) > Math.max(9, tol * 3.6) * k && x > -500) wo = 'lineup';
+      else if (b > 5.5 * k && x > -260) wo = 'high';
       if (wo) {
         s.waveoffAt = t; s.waveoffWhy = wo;
         say(s, 'Wave off, wave off!', 'waveoff');
@@ -407,6 +420,6 @@
   return {
     C: C, LEVELS: LEVELS, PHASES: PHASES, GRADE_INFO: GRADE_INFO, DEG: DEG,
     create: create, step: step, deckY: deckY, gsHeight: gsHeight, ballCells: ballCells, lineupTol: lineupTol,
-    distNm: distNm, grade: grade, analyse: analyse, autopilot: autopilot, runPass: runPass, rng: rng
+    distNm: distNm, grade: grade, lsoCells: lsoCells, devCells: devCells, analyse: analyse, autopilot: autopilot, runPass: runPass, rng: rng
   };
 });
