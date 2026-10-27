@@ -8,7 +8,11 @@ you thought of but did not build.
 (none yet)
 
 ## Backlog (unbuilt ideas, for future days)
-- (empty)
+- sonar-waterfall | game | passive-sonar operator: read a LOFAR/waterfall display, classify contacts by blade-rate tonals, hear procedurally generated screw noise, do target motion analysis | WebAudio + canvas waterfall | scored 4/4/4 on 2026-10-27
+- spectrogram-smuggler | tool | hide text/images inside the spectrogram of a generated WAV; decode via mic or file with an in-browser FFT; explains audio steganography | WebAudio, FFT, WAV encoder | 3/4/5
+- timing-oracle | game | dystopian terminal where you crack a simulated password checker by measuring response times (timing side-channel), with live histograms and statistics | security education, data viz | 4/3/4
+- permit-dystopia | game | sci-fi bureaucracy: a city AI approves/denies citizens' requests; spot forged documents with hidden tells | narrative, procedural docs | 3/3/4
+- cellular-ecology | toy | falling-sand + reaction-diffusion hybrid on WebGPU compute with a canvas fallback | WebGPU compute | 3/4/3
 
 ## Interests of the user (use for inspiration, not as a straitjacket)
 Coding; cybersecurity (learning level: explain concepts in-app); running local AI on modest hardware; Steam games;
