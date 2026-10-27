@@ -808,3 +808,16 @@
   }
   requestAnimationFrame(frame);
 })();
+
+// iOS Safari ignores touch-action in places: cancel page-level drags/pinch unless inside a scrollable panel.
+(function () {
+  function scrollable(el) {
+    for (; el && el !== document.body; el = el.parentElement) {
+      var o = getComputedStyle(el).overflowY;
+      if ((o === 'auto' || o === 'scroll') && el.scrollHeight > el.clientHeight) return true;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) { if (!scrollable(e.target)) e.preventDefault(); }, { passive: false });
+  ['gesturestart', 'gesturechange', 'dblclick'].forEach(function (t) { document.addEventListener(t, function (e) { e.preventDefault(); }); });
+})();
