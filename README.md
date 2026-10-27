@@ -10,8 +10,7 @@ screenshot.
 
 | # | Date | Name | Type | Play / run |
 |---|------|------|------|------------|
-
-(The table is updated automatically after each build.)
+| 1 | 2026-10-27 | [Call the Ball](builds/2026-10-27-call-the-ball/) | Game (flight sim) | [Play](https://phennova.github.io/daily-builds/builds/2026-10-27-call-the-ball/) |
 
 ## Rules of the house
 - Nothing basic: each build needs a distinctive idea, not a clone with a coat of paint.

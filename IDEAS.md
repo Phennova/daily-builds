@@ -5,7 +5,7 @@ Never repeat a concept below. Keep a balance of games and tools. Also keep a sho
 you thought of but did not build.
 
 ## Built
-(none yet)
+- 2026-10-27 | call-the-ball | game | fly the final 18s groove of an F/A-18E carrier approach on the meatball, graded by a procedural LSO with real shorthand; 6-pass cruise + greenie board | canvas 3D-ish render, WebAudio, flight model, speech synthesis | 4
 
 ## Backlog (unbuilt ideas, for future days)
 - sonar-waterfall | game | passive-sonar operator: read a LOFAR/waterfall display, classify contacts by blade-rate tonals, hear procedurally generated screw noise, do target motion analysis | WebAudio + canvas waterfall | scored 4/4/4 on 2026-10-27
