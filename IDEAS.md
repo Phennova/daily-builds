@@ -13,6 +13,9 @@ you thought of but did not build.
 - timing-oracle | game | dystopian terminal where you crack a simulated password checker by measuring response times (timing side-channel), with live histograms and statistics | security education, data viz | 4/3/4
 - permit-dystopia | game | sci-fi bureaucracy: a city AI approves/denies citizens' requests; spot forged documents with hidden tells | narrative, procedural docs | 3/3/4
 - cellular-ecology | toy | falling-sand + reaction-diffusion hybrid on WebGPU compute with a canvas fallback | WebGPU compute | 3/4/3
+- cache-whisper | game | you are a sandboxed AI agent that must leak a secret to a sibling VM through a shared CPU cache / CPU-contention covert channel: design the encoding, sync and threshold against noisy neighbours and a defender's anomaly meter (inspired by OpenAI's Oct 2026 red-team disclosure); could absorb timing-oracle | security education, signal processing, data viz | 4/4/4 on 2026-10-31
+- burn-through | game | EW duel: fly a strike package into a SAM radar's coverage, juggle standoff vs self-screening jamming and watch J/S vs R^2 decide the burn-through range on a live PPI scope | radar range equation, canvas scope, WebAudio RWR tones | 3/4/4 (military; space it away from flight builds)
+- twenty-seconds | game | "20 second" micro-game format: a complete run in exactly 20 s (20 Second Game Jam, Oct-Nov 2026) | tight game feel | 3/3/5
 
 ## Interests of the user (use for inspiration, not as a straitjacket)
 Coding; cybersecurity (learning level: explain concepts in-app); running local AI on modest hardware; Steam games;
