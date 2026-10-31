@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#07080c">
+<title>Earth-Sized Eye</title>
+<meta name="description" content="Link real radio telescopes across the planet, let the Earth turn, and photograph a black hole. A game built on real aperture synthesis.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <header id="bar">
+    <div class="brand">EARTH-SIZED&nbsp;EYE</div>
+    <div id="nightLabel" class="night"></div>
+    <div class="barBtns">
+      <button id="helpBtn" class="icon" aria-label="How it works" title="How it works">?</button>
+      <button id="muteBtn" class="icon" aria-label="Mute" title="Mute (M)">♪</button>
+    </div>
+  </header>
+
+  <main id="stage">
+    <section id="globeWrap" class="panel">
+      <canvas id="globe"></canvas>
+      <div class="cap" id="globeCap">Earth, as seen from the target</div>
+      <div id="clock" class="clock hidden"></div>
+    </section>
+    <section id="imgWrap" class="panel">
+      <canvas id="image"></canvas>
+      <div class="cap" id="imgCap">Your image</div>
+      <div id="imgNote" class="note"></div>
+    </section>
+    <section id="uvWrap" class="panel">
+      <canvas id="uv"></canvas>
+      <div class="cap">(u,v) plane: what you have measured</div>
+    </section>
+    <section id="ctrl" class="panel">
+      <div id="ctrlBody"></div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="card" id="card"></div>
+  </div>
+</div>
+<noscript>This game needs JavaScript.</noscript>
+<script src="land.js"></script>
+<script src="imaging.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
