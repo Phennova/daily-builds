@@ -15,6 +15,8 @@ you thought of but did not build.
 - cellular-ecology | toy | falling-sand + reaction-diffusion hybrid on WebGPU compute with a canvas fallback | WebGPU compute | 3/4/3
 - cache-whisper | game | you are a sandboxed AI agent that must leak a secret to a sibling VM through a shared CPU cache / CPU-contention covert channel: design the encoding, sync and threshold against noisy neighbours and a defender's anomaly meter (inspired by OpenAI's Oct 2026 red-team disclosure); could absorb timing-oracle | security education, signal processing, data viz | 4/4/4 on 2026-10-31
 - burn-through | game | EW duel: fly a strike package into a SAM radar's coverage, juggle standoff vs self-screening jamming and watch J/S vs R^2 decide the burn-through range on a live PPI scope | radar range equation, canvas scope, WebAudio RWR tones | 3/4/4 (military; space it away from flight builds)
+- partition-fault | game | Jepsen-style chaos engineer: cut links, skew clocks and kill nodes in a toy replicated KV store until the history checker proves a lost write / stale read; anomaly shown on a timeline (inspired by Jepsen's ParticleDB report, 2026-10-31) | distributed-systems sim, history checker, data viz | 4/4/3 on 2026-11-01
+- lycurgus-glass | toy | dichroic glass optics: light the Roman Lycurgus Cup from front/back and tune nanoparticle size to shift scattered vs transmitted colour | canvas shading, Mie-ish approximation | 3/3/4 on 2026-11-01
 - twenty-seconds | game | "20 second" micro-game format: a complete run in exactly 20 s (20 Second Game Jam, Oct-Nov 2026) | tight game feel | 3/3/5
 
 ## Interests of the user (use for inspiration, not as a straitjacket)
