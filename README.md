@@ -11,6 +11,7 @@ screenshot.
 | # | Date | Name | Type | Play / run |
 |---|------|------|------|------------|
 | 1 | 2026-10-27 | [Call the Ball](builds/2026-10-27-call-the-ball/) | Game (flight sim) | [Play](https://phennova.github.io/daily-builds/builds/2026-10-27-call-the-ball/) |
+| 3 | 2026-11-01 | [Greenlist](builds/2026-11-01-greenlist/) | Game (word puzzle, security) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-01-greenlist/) |
 
 ## Rules of the house
 - Nothing basic: each build needs a distinctive idea, not a clone with a coat of paint.
