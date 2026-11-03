@@ -241,7 +241,7 @@
   };
   // fill the FFT buffers before the watch starts (negative time)
   Sim.prototype.prime = function (seconds) {
-    const keep = this.t; this.t = -seconds;
+    const keep = this.t; this.t = keep - seconds;
     while (this.t < keep - 1e-9) this.step();
     this.t = keep;
   };

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#030806">
+<title>Blade Rate - passive sonar</title>
+<meta name="description" content="Passive sonar operator game: classify ships and submarines by ear and by real LOFAR and DEMON signal processing.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <header id="hud">
+    <div class="brand">BLADE RATE</div>
+    <div class="hud-mid"><span id="hWatch">WATCH 1/5</span><span id="hName"></span></div>
+    <div class="hud-right">
+      <span id="hClock" title="Watch time left">--:--</span>
+      <span id="hScore" title="Score">0</span>
+      <button id="bBook" class="hb" aria-label="Acoustic intelligence book">BOOK</button>
+      <button id="bHelp" class="hb" aria-label="How it works">?</button>
+      <button id="bMute" class="hb" aria-label="Mute">SND</button>
+    </div>
+  </header>
+  <div id="threat" hidden><span id="threatLbl">COUNTER-DETECTION</span><div class="bar"><i id="threatBar"></i></div></div>
+
+  <main id="stack">
+    <section class="panel" id="pBTR">
+      <div class="ptitle"><b>BROADBAND</b> bearing / time <span class="ro" id="roBeam">BEAM 000</span></div>
+      <div class="cwrap"><canvas id="cBTR" aria-label="Bearing-time display. Tap to steer the beam."></canvas></div>
+    </section>
+    <section class="panel" id="pLO">
+      <div class="ptitle"><b>LOFAR</b> <span id="roLoRange">0-250 Hz</span> <span class="ro" id="roLo">drag to place harmonic cursor</span></div>
+      <div class="cwrap"><canvas id="cLO" aria-label="LOFAR narrowband display. Drag to place the harmonic cursor."></canvas></div>
+    </section>
+    <section class="panel" id="pDM">
+      <div class="ptitle"><b>DEMON</b> 0-40 Hz <span class="ro" id="roDm">drag to place shaft-rate cursor</span></div>
+      <div class="cwrap"><canvas id="cDM" aria-label="DEMON envelope spectrum. Drag to place the shaft-rate cursor."></canvas></div>
+    </section>
+  </main>
+
+  <footer id="controls">
+    <button id="bLeft" class="cb" aria-label="Steer left">&#9664;</button>
+    <button id="bRight" class="cb" aria-label="Steer right">&#9654;</button>
+    <button id="bInt" class="cb" title="Integration: longer averaging pulls faint lines out of the noise">INT 4</button>
+    <button id="bZoom" class="cb" title="LOFAR range">0-250</button>
+    <button id="bReport" class="cb primary">REPORT</button>
+    <button id="bSecure" class="cb" title="End the watch">SECURE</button>
+  </footer>
+
+  <div id="tut" hidden><p id="tutText"></p><button id="tutSkip" class="link">skip tutorial</button></div>
+  <div id="toast" hidden></div>
+  <div id="flash"></div>
+
+  <!-- overlays -->
+  <div class="ovl" id="oTitle">
+    <div class="card title">
+      <h1>BLADE RATE</h1>
+      <p class="sub">passive sonar &middot; five watches &middot; one quiet boat</p>
+      <canvas id="cTitle" width="560" height="120" aria-hidden="true"></canvas>
+      <p>You are the sonar supervisor of a fast-attack submarine on a barrier patrol. You cannot ping. You can only
+        <em>listen</em>. Steer your beam onto a contact, read its machinery tones on the LOFAR, its propeller rhythm on the
+        DEMON, check the intelligence book, and report what it is and how fast it is going.</p>
+      <p class="hint">Headphones recommended. Every display is a real FFT of the sound being simulated.</p>
+      <div class="row"><button id="bStart" class="big">START PATROL</button><button id="bHow" class="big ghost">HOW IT WORKS</button></div>
+      <p class="small" id="best"></p>
+    </div>
+  </div>
+
+  <div class="ovl" id="oHelp" hidden>
+    <div class="card scroll">
+      <h2>How to read the stack</h2>
+      <p><b>BROADBAND</b> (top): bearing across (000 = our bow, centre), time flowing down. Ships draw bright streaks.
+        The hatched edges are our <em>baffles</em> (we are deaf astern). <b>Tap or drag</b> to steer the listening beam;
+        &#9664; &#9654; or arrow keys fine-tune it by 1&deg;.</p>
+      <p><b>LOFAR</b>: frequency across (Hz), time down; the trace on top is the averaged spectrum. Rotating machinery
+        makes steady vertical <em>lines</em>. A ship's electrical plant hums at <b>50 Hz</b> or <b>60 Hz</b> with harmonics at
+        2x, 3x: drag the <b>harmonic cursor</b> onto a line and its ticks show where the harmonics should be.
+        Whales make lines that <em>sweep</em> and come and go.</p>
+      <p><b>DEMON</b> (Detection of Envelope Modulation On Noise): the hiss of a cavitating propeller pulses once per
+        blade. DEMON takes the envelope of that hiss and shows its rhythm. Put the cursor on the
+        <b>shaft rate</b> (the small line at far left): its ticks then mark 1x, 2x, 3x shaft; the tall <b>blade-rate</b>
+        line sits on tick N, where N = number of blades. Shaft rate x 60 = RPM.</p>
+      <p><b>Speed</b> = RPM / turns-per-knot (TPK, from the book). A quiet submarine does not cavitate: use its
+        blade-rate line low on the LOFAR (zoom to 0-60 Hz) and divide by its blade count.</p>
+      <p><b>INT</b> (integration) averages more spectra: faint lines appear, but the picture reacts more slowly.</p>
+      <p><b>REPORT</b> classifies whatever is on the beam bearing. Points: class 100, speed within 2 kn +50 (within 4 kn +20).
+        Calling a Red boat friendly costs 50. Reporting empty water costs 25.</p>
+      <p class="small">Keys: arrows steer (shift = 5&deg;), I integration, Z zoom, R report, B book, M mute.</p>
+      <div class="row"><button class="big close">GOT IT</button></div>
+    </div>
+  </div>
+
+  <div class="ovl" id="oBook" hidden>
+    <div class="card scroll wide">
+      <h2>Acoustic intelligence book</h2>
+      <div id="bookList"></div>
+      <div class="row"><button class="big close">CLOSE</button></div>
+    </div>
+  </div>
+
+  <div class="ovl" id="oBrief" hidden>
+    <div class="card">
+      <h2 id="briefTitle"></h2>
+      <p id="briefText"></p>
+      <p class="small" id="briefMeta"></p>
+      <div class="row"><button id="bGo" class="big">TAKE THE WATCH</button></div>
+    </div>
+  </div>
+
+  <div class="ovl sheet" id="oReport" hidden>
+    <div class="card scroll">
+      <h2>Contact report <span id="repBrg"></span></h2>
+      <p class="small">Classify the contact on the beam bearing.</p>
+      <div id="repClasses" class="chips"></div>
+      <div id="repSpeedRow">
+        <div class="speed"><span>Speed</span>
+          <button id="spMinus" class="cb sm">-</button><output id="spOut">10.0 kn</output><button id="spPlus" class="cb sm">+</button>
+        </div>
+        <input id="spRange" type="range" min="0" max="30" step="0.1" value="10" aria-label="Speed in knots">
+        <div id="calc" class="calc"></div>
+      </div>
+      <div class="row"><button id="repCancel" class="big ghost">CANCEL</button><button id="repSend" class="big">FILE REPORT</button></div>
+    </div>
+  </div>
+
+  <div class="ovl" id="oResult" hidden>
+    <div class="card"><div id="resBody"></div><div class="row"><button class="big close">CONTINUE</button></div></div>
+  </div>
+
+  <div class="ovl" id="oDebrief" hidden>
+    <div class="card scroll wide"><div id="debBody"></div><div class="row" id="debRow"></div></div>
+  </div>
+
+  <div class="ovl" id="oFinal" hidden>
+    <div class="card scroll"><div id="finBody"></div>
+      <div class="row"><button id="bAgain" class="big">NEW PATROL</button></div></div>
+  </div>
+</div>
+<script src="data.js"></script>
+<script src="sim.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
