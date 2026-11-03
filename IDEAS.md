@@ -7,6 +7,7 @@ you thought of but did not build.
 ## Built
 - 2026-10-27 | call-the-ball | game | fly the final 18s groove of an F/A-18E carrier approach on the meatball, graded by a procedural LSO with real shorthand; 6-pass cruise + greenie board | canvas 3D-ish render, WebAudio, flight model, speech synthesis | 4
 - 2026-11-01 | greenlist | game | scrub a real KGW LLM text watermark out of dispatches by swapping synonyms while a perplexity detector watches; 5 nights incl. k=2 hash, blind, spoofing | hash green lists, z-test, exact DP solver, DOM word puzzle, WebAudio | 4
+- 2026-11-03 | blade-rate | game | passive sonar operator: classify contacts from LOFAR tonals + DEMON shaft/blade rate with harmonic cursors, TPK speed, and headphones; 5 watches | honest DSP on simulated hydrophone, canvas waterfalls, WebAudio | 4
 
 ## Backlog (unbuilt ideas, for future days)
 - spectrogram-smuggler | tool | hide text/images inside the spectrogram of a generated WAV; decode via mic or file with an in-browser FFT; explains audio steganography | WebAudio, FFT, WAV encoder | 3/4/5
