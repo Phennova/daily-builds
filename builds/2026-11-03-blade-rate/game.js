@@ -248,7 +248,13 @@
   $('bInt').onclick = () => { G.integ = G.integ === 1 ? 4 : G.integ === 4 ? 16 : 1; if (G.sim) G.sim.integ = G.integ; A.click(); updROs(); };
   $('bZoom').onclick = () => { G.zoom = G.zoom === 250 ? 62.5 : 250; A.click(); updROs(); drawLO(); };
   $('bReport').onclick = openReport;
-  $('bSecure').onclick = () => { if (!G.running) return; if (confirm('Secure the watch now? Unreported contacts count as missed.')) endWatch('secured'); };
+  let secureArm = 0;
+  $('bSecure').onclick = () => {
+    if (!G.running) return;
+    if (Date.now() - secureArm < 3000) { secureArm = 0; $('bSecure').textContent = 'SECURE'; endWatch('secured'); return; }
+    secureArm = Date.now(); $('bSecure').textContent = 'SURE?'; toast('Tap SECURE again to end the watch. Unreported contacts count as missed.', 2800);
+    setTimeout(() => { if (secureArm && Date.now() - secureArm >= 2900) { secureArm = 0; $('bSecure').textContent = 'SECURE'; } }, 3000);
+  };
   $('bBook').onclick = () => { openBook(); };
   $('bHelp').onclick = () => show('oHelp');
   $('bMute').onclick = () => { G.muted = !G.muted; A.mute(G.muted); $('bMute').classList.toggle('off', G.muted); };
@@ -460,16 +466,17 @@
       G.acc += dt;
       let stepped = false;
       while (G.acc >= S.STEP) { G.acc -= S.STEP; stepOnce(false); stepped = true; }
-      if (stepped) {
-        const w = D.WATCHES[G.wi];
-        draw(); updHud();
-        if (w.clock && G.sim.t >= w.clock && G.sim.contacts.some(c => c.cls.flag === 'Red' && !c.reported)) torpedo();
-        else if (G.sim.t >= w.duration) endWatch('time');
-        else if (G.sim.contacts.every(c => c.reported) && isPausingFree()) endWatch('all');
-        tutCheck();
-      }
+      if (stepped) afterStep();
     }
     requestAnimationFrame(frame);
+  }
+  function afterStep() {
+    const w = D.WATCHES[G.wi];
+    draw(); updHud();
+    if (w.clock && G.sim.t >= w.clock && G.sim.contacts.some(c => c.cls.flag === 'Red' && !c.reported)) torpedo();
+    else if (G.sim.t >= w.duration) endWatch('time');
+    else if (G.sim.contacts.every(c => c.reported) && isPausingFree()) endWatch('all');
+    tutCheck();
   }
   function isPausingFree() { return !isPausing(); }
 
@@ -617,4 +624,49 @@
     }
   }
   boot();
+
+  // ---------------- ?selftest : drives the whole UI flow headlessly ----------------
+  if (Q.has('selftest')) {
+    const log = [], ok = (n, c) => log.push((c ? 'PASS ' : 'FAIL ') + n);
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    const click = id => $(id).click();
+    const sleepStep = n => { for (let k = 0; k < n && G.running; k++) { stepOnce(true); afterStep(); } };
+    (async () => {
+      try {
+        click('bStart'); ok('brief shown', !$('oBrief').hidden);
+        for (let wi = 0; wi < D.WATCHES.length; wi++) {
+          const w = D.WATCHES[wi];
+          if (wi > 0) { $('debRow').lastChild.click(); }
+          click('bGo'); ok('watch ' + (wi + 1) + ' running', G.running && G.sim);
+          if (wi === 3) { // test torpedo / lost path: just run the clock out
+            let n = 0; while (G.running && n++ < 5000) { stepOnce(true); afterStep(); }
+            await wait(3600); ok('watch 4 lost path -> debrief', !$('oDebrief').hidden && /WATCH LOST|debrief/.test($('debBody').textContent));
+            continue;
+          }
+          const cts = G.sim.contacts.slice();
+          for (const c of cts) {
+            sleepStep(3);
+            G.sim.setSteer(Math.round(S.contactBearing(c, G.sim.t))); markLO = true; G.integ = 16; G.sim.integ = 16;
+            sleepStep(60);
+            G.loF = snap(G.sim.loI, c.lines && c.lines[0] ? c.lines[0].f : 60, S.LO_RES, 3);
+            G.dmF = c.cls.type === 'bio' ? null : snap(G.sim.dmI, S.shaftHz(c.cls, c.speed), S.DM_RES, 1);
+            click('bReport'); ok('report opens', !$('oReport').hidden);
+            $('repClasses').querySelector('[data-id="' + c.cls.id + '"]').click();
+            if (c.cls.type !== 'bio') { const b = $('calc').querySelector('button'); if (b) b.click(); }
+            ok('file enabled', !$('repSend').disabled);
+            click('repSend'); ok('result shown', !$('oResult').hidden && /Classified|Misclassified|No contact/.test($('resBody').textContent));
+            $('oResult').querySelector('.close').click();
+            ok('resumed', !isPausing() || G.ended);
+          }
+          let n = 0; while (G.running && n++ < 5000) { sleepStep(1); }
+          ok('watch ' + (wi + 1) + ' ended -> debrief', !$('oDebrief').hidden);
+          ok('score finite', Number.isFinite(G.score));
+        }
+        click('bSecure'); // not running: harmless
+        $('debRow').lastChild.click(); // next / end patrol
+        ok('final or brief shown', !$('oFinal').hidden || !$('oBrief').hidden);
+      } catch (e) { log.push('EXCEPTION ' + e.message + ' ' + (e.stack || '').split('|')[1]); }
+      document.body.setAttribute('data-selftest', log.join(' | ') + ' || score=' + G.score);
+    })();
+  }
 })();
