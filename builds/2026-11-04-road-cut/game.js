@@ -398,6 +398,7 @@
     if (v >= n) return { k: n - 1, t: 1 };
     var k = Math.floor(v); return { k: k, t: reduceMotion ? 1 : v - k };
   }
+  var fastW = 420, renderMs = 20;
   function renderReplay(fast) {
     var ev = S.puzzle.events, n = ev.length, st = replayState(S.replay.v);
     if (st.k !== S.replay.lastK) {
@@ -407,8 +408,14 @@
     if (S.replay.v >= n) {
       computeStatic(); draw();
     } else {
-      var w = fast ? Math.min(FW, 420) : FW, h = Math.round(w / 1.8);
+      // adaptive resolution while animating: keep frames under ~30 ms on slow devices
+      var w = fast ? Math.min(FW, fastW) : FW, h = Math.round(w / 1.8), t0 = performance.now();
       var f = Render.computeFrame(ev, st.k, st.t, w, h, { water: ev[st.k].kind === 'deposit' });
+      if (fast) {
+        var ms = performance.now() - t0;
+        renderMs = renderMs * 0.8 + ms * 0.2;
+        if (renderMs > 30 && fastW > 240) fastW -= 20; else if (renderMs < 14 && fastW < 480) fastW += 20;
+      }
       putFrame(f);
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(frameCanvas, 0, 0, f.w, f.h, 0, 0, cv.width, cv.height);
@@ -625,6 +632,7 @@
       var n = S.puzzle.events.length;
       S.replay.playing = false;
       for (var v = 0; v <= n; v += 0.37) { S.replay.v = v; renderReplay(true); }
+      out.push('info replay frame ' + renderMs.toFixed(1) + ' ms at width ' + fastW);
       S.replay.v = n; renderReplay(false);
       return /Today/.test($('clock').textContent);
     });
@@ -662,6 +670,13 @@
       if (S.seq[0] !== c) throw new Error('letter');
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace' }));
       return S.seq.length === 0;
+    });
+    t('no horizontal overflow; label boxes inside the cliff', function () {
+      startStop(8);
+      if (document.documentElement.scrollWidth > innerWidth + 1) throw new Error('page wider than viewport: ' + document.documentElement.scrollWidth);
+      var r = $('panel').getBoundingClientRect();
+      out.push('info viewport ' + innerWidth + 'x' + innerHeight + ', page height ' + document.documentElement.scrollHeight + ', actions bottom ' + Math.round($('actions').getBoundingClientRect().bottom) + ', panel w ' + Math.round(r.width));
+      return true;
     });
     t('finishing stop 8 shows the end screen', function () {
       startStop(8);

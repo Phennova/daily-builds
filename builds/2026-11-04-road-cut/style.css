@@ -96,6 +96,11 @@ button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent
 .seg { flex: 1 0 8px; height: 3px; background: repeating-linear-gradient(90deg, var(--ink) 0 5px, transparent 5px 9px); margin-bottom: 14px; }
 .bigstars { font-size: 32px; color: var(--ochre); margin: 6px 0; letter-spacing: 3px; }
 @media (prefers-reduced-motion: reduce) { .chip.pop { animation: none; } }
+/* phones in portrait: keep the cliff in view while scrolling through long card lists */
+@media (max-width: 899px) and (min-height: 600px) {
+  #cliffCol { position: sticky; top: 0; z-index: 3; background: var(--paper); padding-top: 4px; margin-top: -4px;
+    box-shadow: 0 6px 6px -6px rgba(43,38,32,.35); }
+}
 @media (max-width: 420px) {
   .chip { height: 40px; padding: 0 7px 0 4px; gap: 4px; font-size: 12px; }
   .chip canvas { width: 20px; height: 26px; }
