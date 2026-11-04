@@ -23,6 +23,9 @@ you thought of but did not build.
 - cut-and-rotate | game | break a Videocrypt-style analog TV scrambler (cut-point rotation, line shuffle) by line-to-line correlation, as in Markus Kuhn's 1990s attack; dystopian pirate-broadcast framing | canvas image DSP, security history | 4/4/4 on 2026-11-03
 - blink-survey | game | Rubin-style difference imaging: blink exposures, link moving dots into tracklets, use the opposition rate of motion to get distance and find a Neptune Trojan among asteroids, satellite streaks and cosmic rays | procedural star fields, PSF, orbital rate physics | 4/4/4 on 2026-11-03 (space away from astronomy builds)
 - reentry-footprint | game | narrow a decaying satellite's re-entry window (Swift, Nov 2026) along a ground-track ribbon as solar flux shifts drag | orbital decay, map projection | 3/3/4 on 2026-11-03
+- race-window | game | exploit a TOCTOU race: swap a symlink between a privileged program's check and use, widen the window (slow path resolution) and win the race against a noisy scheduler (inspired by the WordPress TOCTOU CVE in CISA KEV, 2026-11-04) | security education, scheduler sim, timelines | 4/3/4 on 2026-11-04
+- neuron-carve | game | hand-place ReLU neurons as draggable half-planes to carve decision boundaries under a neuron budget (XOR, ring, spiral) | tiny MLP, canvas | 3/3/5 on 2026-11-04
+- slope-armor | game | design a tank's sloped armour (line-of-sight thickness, ricochet angles, weight budget) and survive incoming shells | ballistics sim | 3/4/4 on 2026-11-04 (military; space it)
 
 ## Interests of the user (use for inspiration, not as a straitjacket)
 Coding; cybersecurity (learning level: explain concepts in-app); running local AI on modest hardware; Steam games;
