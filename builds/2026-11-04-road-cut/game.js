@@ -90,7 +90,8 @@
   function w2c(x, y) { return [x / Geo.W * cv.width, (Geo.H - y) / Geo.H * cv.height]; }
   function drawLabels() {
     var an = S.puzzle.analysis, ev = S.puzzle.events;
-    var s = Math.max(15, Math.min(26, cv.width / 34));
+    var cssW = cv.getBoundingClientRect().width || cv.width, dpr = cv.width / cssW;
+    var s = Math.max(15, Math.min(24, cssW / 32)) * dpr;
     ctx.font = '800 ' + Math.round(s * 0.72) + 'px ui-sans-serif, system-ui, sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     an.cards.forEach(function (c) {

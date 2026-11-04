@@ -456,26 +456,76 @@
     // keep only constraints between cards
     var isCard = {}; cards.forEach(function (c) { isCard[c] = true; });
     consList = consList.filter(function (c) { return isCard[c.a] && isCard[c.b]; });
-    // labels
-    var labels = {};
-    cards.forEach(function (c) {
-      var e = ev[c], p = null;
-      if (isMaterial(e)) p = labelPointGrid(mat, c, gw, gh);
-      else if (e.kind === 'fault') p = midPoint(markPts[c], gw);
-      else if (e.kind === 'erosion') p = midPoint(contactPts[c], gw);
-      if (p) labels[c] = { x: (p.i + 0.5) * cw, y: H - (p.j + 0.5) * ch };
-    });
+    var labels = problems.length ? {} : placeLabels(ev, cards, mat, markPts, contactPts, gw, gh, cw, ch);
     return {
       valid: problems.length === 0, problems: problems, cards: cards, constraints: consList, labels: labels,
       area: area, visible: visible, grid: { gw: gw, gh: gh, mat: mat, fmark: fmark }
     };
   }
 
-  function midPoint(list, gw) {
-    if (!list.length) return null;
-    var s = list.slice().sort(function (a, b) { return (a % gw) - (b % gw); });
-    var gi = s[s.length >> 1];
-    return { i: gi % gw, j: Math.floor(gi / gw), gi: gi };
+  /* Letter labels: each material label sits well inside its rock, each fault/erosion label on its trace, and
+   * labels keep apart from each other and from the window edges. Greedy placement over candidate cells,
+   * most-constrained first, then two refinement rounds that re-place each label against all the others. */
+  var LABEL_SEP = 17, LABEL_EDGE = 9; // world units (a label is ~9-16 units wide depending on screen)
+  function placeLabels(ev, cards, mat, markPts, contactPts, gw, gh, cw, ch) {
+    var cand = {}, order = [];
+    cards.forEach(function (c) {
+      var e = ev[c], list = [];
+      if (isMaterial(e)) {
+        var d = distField(mat, c, gw, gh), maxD = 0, idx;
+        for (idx = 0; idx < d.length; idx++) if (d[idx] > maxD) maxD = d[idx];
+        var thr = Math.min(maxD, Math.max(1.5, maxD * 0.45));
+        for (var j = 0; j < gh; j++) for (var i = (j & 1); i < gw; i += 2) {
+          idx = j * gw + i;
+          if (d[idx] >= thr) list.push({ i: i, j: j, q: Math.min(d[idx], 5) * 2 - Math.abs(i - gw / 2) * 0.01 });
+        }
+      } else if (e.kind === 'fault' || e.kind === 'erosion') {
+        var pts = e.kind === 'fault' ? markPts[c] : contactPts[c];
+        if (pts.length) {
+          var s = pts.slice().sort(function (a, b) { return (a % gw) - (b % gw) || a - b; }), mid = s.length >> 1;
+          for (var k = 0; k < s.length; k += Math.max(1, Math.floor(s.length / 300))) {
+            list.push({ i: s[k] % gw, j: Math.floor(s[k] / gw), q: 6 - 4 * Math.abs(k - mid) / s.length });
+          }
+        }
+      }
+      if (list.length) { cand[c] = list; order.push(c); }
+    });
+    order.sort(function (a, b) { return cand[a].length - cand[b].length; });
+    var pos = {};
+    function score(c, p) {
+      var x = (p.i + 0.5) * cw, y = H - (p.j + 0.5) * ch, sc = p.q;
+      if (x < LABEL_EDGE || x > W - LABEL_EDGE || y < LABEL_EDGE || y > H - LABEL_EDGE) sc -= 8;
+      for (var o in pos) {
+        if (+o === c) continue;
+        var dd = Math.hypot(x - pos[o].x, y - pos[o].y);
+        if (dd < LABEL_SEP) sc -= 12 + 30 * (1 - dd / LABEL_SEP);
+      }
+      return sc;
+    }
+    function placeOne(c) {
+      var best = null, bs = -1e9;
+      cand[c].forEach(function (p) { var s = score(c, p); if (s > bs) { bs = s; best = p; } });
+      pos[c] = { x: (best.i + 0.5) * cw, y: H - (best.j + 0.5) * ch };
+    }
+    order.forEach(placeOne);
+    for (var round = 0; round < 2; round++) order.forEach(placeOne);
+    return pos;
+  }
+
+  function distField(mat, m, gw, gh) {
+    var N = gw * gh, d = new Float32Array(N), i, j, idx, BIG = 1e6;
+    for (idx = 0; idx < N; idx++) d[idx] = mat[idx] === m ? BIG : 0;
+    for (j = 0; j < gh; j++) for (i = 0; i < gw; i++) {
+      idx = j * gw + i; if (!d[idx]) continue;
+      d[idx] = Math.min(d[idx], i > 0 ? d[idx - 1] + 1 : 1, j > 0 ? d[idx - gw] + 1 : 1,
+        i > 0 && j > 0 ? d[idx - gw - 1] + 1.414 : 1, i < gw - 1 && j > 0 ? d[idx - gw + 1] + 1.414 : 1);
+    }
+    for (j = gh - 1; j >= 0; j--) for (i = gw - 1; i >= 0; i--) {
+      idx = j * gw + i; if (!d[idx]) continue;
+      d[idx] = Math.min(d[idx], i < gw - 1 ? d[idx + 1] + 1 : 1, j < gh - 1 ? d[idx + gw] + 1 : 1,
+        i < gw - 1 && j < gh - 1 ? d[idx + gw + 1] + 1.414 : 1, i > 0 && j < gh - 1 ? d[idx + gw - 1] + 1.414 : 1);
+    }
+    return d;
   }
 
   // deepest interior point of a material on the grid (chamfer distance transform)
@@ -591,8 +641,8 @@
       case 'pluton': return 'Granite pluton: ' + r.blurb + '.';
       case 'fault': return (e.normal ? 'Normal fault: the crust stretched and the upper block slid down.' : 'Reverse fault: the crust was squeezed and the upper block was shoved up.');
       case 'erosion': return 'Erosion surface: the land rose above the sea and was worn down for millions of years.';
-      case 'tilt': return 'Tilting: the whole block of crust was tipped by tectonic forces.';
-      case 'fold': return 'Folding: compression buckled the layers into waves.';
+      case 'tilt': return 'Tilting: the whole block of crust was tipped by tectonic forces. It has no letter on the cliff: selecting it shades the layers it tipped.';
+      case 'fold': return 'Folding: compression buckled the layers into waves. It has no letter on the cliff: selecting it shades the layers it bent.';
     }
     return '';
   }

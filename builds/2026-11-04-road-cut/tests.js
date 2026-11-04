@@ -127,6 +127,12 @@ levels.forEach(function (lv) {
       var e = ev[c];
       if (e.kind !== 'tilt' && e.kind !== 'fold' && !an.labels[c]) ok(false, where + ' no label for ' + e.kind);
     });
+    // labels do not overlap each other
+    var lk = Object.keys(an.labels);
+    for (var la = 0; la < lk.length; la++) for (var lb = la + 1; lb < lk.length; lb++) {
+      var A = an.labels[lk[la]], B = an.labels[lk[lb]];
+      if (Math.hypot(A.x - B.x, A.y - B.y) < 12) ok(false, where + ' labels overlap: ' + ev[lk[la]].kind + '/' + ev[lk[lb]].kind);
+    }
     // incomplete order is reported as missing
     if (G.check(p, tr.slice(1)).ok) ok(false, where + ' incomplete order accepted');
     // replay continuity: progress 1 of event k equals the full state; progress 0 is close to the previous state
