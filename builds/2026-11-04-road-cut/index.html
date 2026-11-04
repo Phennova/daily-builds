@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#efe8da">
+<title>Road Cut - read the rocks, rewind deep time</title>
+<meta name="description" content="A geology puzzle: every cliff is a real simulation of deep time. Put the events in order, then watch 500 million years replay.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <header id="hud">
+    <button id="bHome" class="brand" aria-label="Back to the road map">ROAD CUT</button>
+    <div id="hStop"></div>
+    <div class="hud-right">
+      <span id="hStars" aria-label="Stars"></span>
+      <button id="bGuide" class="hb" aria-label="Field guide">?</button>
+      <button id="bMute" class="hb" aria-label="Mute sound">&#9834;</button>
+    </div>
+  </header>
+
+  <main id="layout">
+    <section id="cliffCol">
+      <div id="cliffWrap">
+        <canvas id="cliff" aria-label="Cross-section of the road cut. Tap a rock unit to identify it."></canvas>
+        <div id="road" aria-hidden="true"></div>
+        <div id="clock" hidden></div>
+      </div>
+      <p id="info">Tap the rock or a card to identify it.</p>
+      <div id="replayBar" hidden>
+        <button id="bPlay" class="btn small" aria-label="Play or pause the replay">&#10074;&#10074;</button>
+        <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Deep time scrubber">
+        <button id="bNext" class="btn primary small">Next stop &#8594;</button>
+      </div>
+    </section>
+
+    <section id="panel">
+      <div id="intro"></div>
+      <div class="lbl">Your history <span class="muted">oldest &#8594; youngest</span></div>
+      <ol id="seq" aria-label="Your sequence, oldest first"></ol>
+      <div class="lbl">Events <span class="muted">tap to add</span></div>
+      <div id="pool" aria-label="Events to place"></div>
+      <div id="actions">
+        <button id="bUndo" class="btn">Undo</button>
+        <button id="bClear" class="btn">Clear</button>
+        <button id="bHint" class="btn">Hint</button>
+        <button id="bCheck" class="btn primary">Check</button>
+      </div>
+      <div id="feedback" role="status" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <div id="title" class="overlay">
+    <div class="sheet">
+      <h1>ROAD CUT</h1>
+      <p class="tag">Read the rocks. Rewind 500 million years.</p>
+      <p>Every cliff on this road trip was made by actually simulating deep time: seas laying down sediment, the crust tilting,
+        folding and faulting, magma forcing its way up, erosion planing it all flat. Put the events in order, oldest first,
+        using the clues a field geologist uses. Get it right and the cliff rebuilds itself before your eyes.</p>
+      <div id="map" aria-label="Road trip stops"></div>
+      <div class="row">
+        <button id="bStart" class="btn primary big">Start the road trip</button>
+        <button id="bEndless" class="btn big">Endless road</button>
+      </div>
+      <button id="bGuide2" class="btn link">Field guide: how to read a cliff</button>
+    </div>
+  </div>
+
+  <div id="guide" class="overlay" hidden>
+    <div class="sheet scroll">
+      <h2>Field guide</h2>
+      <ol class="rules">
+        <li><b>Superposition.</b> Layers pile up from the bottom: lower layers are older.</li>
+        <li><b>Original horizontality.</b> Sediment settles flat. Tilted or folded layers were bent later, so the tilting or
+          folding is younger than every layer it bends. Flatter layers on top came after.</li>
+        <li><b>Cross-cutting.</b> Whatever cuts through rock is younger than that rock: dikes, granite plutons and faults.
+          A dike that crosses a fault without being broken came after the fault.</li>
+        <li><b>Unconformities.</b> A heavy wavy line is an old erosion surface: the land rose, was worn down, then sank and
+          was buried again. Everything it cuts is older than the erosion; everything sitting on it is younger. A fault
+          that stops at the line happened before the erosion.</li>
+        <li><b>When the rocks can't tell.</b> Some pairs have no contact that proves their order (say, a fault and a tilt).
+          Any order the evidence allows is accepted.</li>
+      </ol>
+      <h3>Rock key</h3>
+      <div id="legend"></div>
+      <p class="muted">Tap a letter on the cliff or a card to highlight it. Keyboard: type a letter to add it, Backspace to
+        undo, Enter to check.</p>
+      <button id="bGuideClose" class="btn primary">Back to the rocks</button>
+    </div>
+  </div>
+
+  <div id="endScreen" class="overlay" hidden>
+    <div class="sheet">
+      <h2>Road trip complete</h2>
+      <p id="endStars" class="bigstars"></p>
+      <p id="endText"></p>
+      <div class="row">
+        <button id="bEndEndless" class="btn primary big">Keep driving (endless)</button>
+        <button id="bEndMap" class="btn big">Road map</button>
+      </div>
+    </div>
+  </div>
+  <div id="selftest" hidden></div>
+</div>
+<script src="geo.js"></script>
+<script src="render.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

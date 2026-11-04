@@ -239,7 +239,7 @@
           if (rock === 'coal') thick *= 0.45;
           var from = lv;
           var level = j === n - 1 ? Infinity : lv + thick;
-          ev.push({ kind: 'deposit', rock: rock, level: level, animFrom: from, animTo: j === n - 1 ? from + Math.max(thick, 60) : level });
+          ev.push({ kind: 'deposit', rock: rock, level: level, animFrom: from, animTo: j === n - 1 ? Math.max(from + 40, H + 6) : level });
           lv = lv + thick;
         }
         deformed = false;
