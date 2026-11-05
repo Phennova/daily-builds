@@ -9,6 +9,7 @@ you thought of but did not build.
 - 2026-11-01 | greenlist | game | scrub a real KGW LLM text watermark out of dispatches by swapping synonyms while a perplexity detector watches; 5 nights incl. k=2 hash, blind, spoofing | hash green lists, z-test, exact DP solver, DOM word puzzle, WebAudio | 4
 - 2026-11-03 | blade-rate | game | passive sonar operator: classify contacts from LOFAR tonals + DEMON shaft/blade rate with harmonic cursors, TPK speed, and headphones; 5 watches | honest DSP on simulated hydrophone, canvas waterfalls, WebAudio | 4
 - 2026-11-04 | road-cut | game | order the events of procedurally simulated road-cut cliffs (relative dating: superposition, cross-cutting, unconformities), checker derives constraints from the evidence, then deep time replays | inverse-mapped kinematic geology, per-pixel canvas rendering, constraint derivation, WebAudio | 4
+- 2026-11-05 | pregroove | game | recover a hidden picture from a CD-R rip by rebuilding the burner's spiral geometry (v, pitch, drift, start angle) with an autocorrelation lag scope, LM fit and ring-offset readouts; 5 discs + dead-drop links | closed-form spiral inverse mapping, stream autocorrelation, WebAudio sonification | 4
 
 ## Backlog (unbuilt ideas, for future days)
 - spectrogram-smuggler | tool | hide text/images inside the spectrogram of a generated WAV; decode via mic or file with an in-browser FFT; explains audio steganography | WebAudio, FFT, WAV encoder | 3/4/5

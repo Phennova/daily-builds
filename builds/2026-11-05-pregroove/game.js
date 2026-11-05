@@ -659,11 +659,6 @@
   if (drop) { $('dropInBtn').hidden = false; $('dropInBtn').addEventListener('click', function () { ac(); startLevel(0, drop); }); }
   requestAnimationFrame(frameLoop);
   var demo = Q.get('demo'), lvl = Q.get('level');
-  if (Q.has('layout')) setTimeout(function () {
-    var vw = document.documentElement.clientWidth, bad = [];
-    document.querySelectorAll('*').forEach(function (el) { var b = el.getBoundingClientRect(); if (b.right > vw + 1 && b.width) bad.push(el.tagName + '#' + el.id + '.' + el.className + ' ' + Math.round(b.left) + '-' + Math.round(b.right)); });
-    var pre = document.createElement('pre'); pre.id = 'selftest'; pre.textContent = 'vw ' + vw + ' sw ' + document.documentElement.scrollWidth + '\n' + bad.slice(0, 15).join('\n'); document.body.appendChild(pre);
-  }, 800);
   function playtest() {
     var out = [], okAll = true, seeds = ['a', 'b', 'c', 'd'];
     for (var li = 0; li < LEVELS.length; li++) seeds.forEach(function (sd) {
