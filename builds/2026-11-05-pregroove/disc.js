@@ -181,8 +181,10 @@
     mean /= N;
     var vr = 0;
     for (i = 0; i < N; i++) { x[i] -= mean; vr += x[i] * x[i]; }
-    vr = vr / N || 1e-9;
+    vr = vr / N;
     var c = new Float32Array(Lmax - Lmin + 1);
+    c.blank = vr < 0.004; // (nearly) all one level: a blank part of the picture has no echo
+    if (c.blank) return c;
     for (L = Lmin; L <= Lmax; L++) {
       var s = 0;
       for (i = 0; i < W; i++) s += x[i] * x[i + L];
@@ -192,18 +194,26 @@
   }
   // first strong peak (avoids picking 2 revolutions); sub-frame position by the centroid of the peak top
   function findPeak(c, Lmin) {
-    var max = -1, i;
-    for (i = 1; i < c.length - 1; i++) if (c[i] > max) max = c[i];
-    for (i = 1; i < c.length - 1; i++) {
-      if (c[i] >= c[i - 1] && c[i] >= c[i + 1] && c[i] >= 0.8 * max) {
-        var m = c[i], s = 0, w = 0;
-        for (var j = Math.max(0, i - 6); j <= Math.min(c.length - 1, i + 6); j++) {
-          var q = c[j] - m * 0.4; if (q > 0) { s += q * j; w += q; }
-        }
-        return { lag: Lmin + (w ? s / w : i), corr: m, index: i };
-      }
+    if (c.blank) return null;
+    var max = -1, i, E = 4, sorted = Array.prototype.slice.call(c).sort(function (a, b) { return a - b; });
+    var med = sorted[sorted.length >> 1];
+    for (i = E; i < c.length - E; i++) if (c[i] > max) max = c[i];
+    if (max - med < 0.25) return null;
+    // the true revolution is the strongest echo; two revolutions echo about as strongly, so prefer half of the best
+    // lag when an (almost) equally strong peak sits there. Sub-revolution symmetry in the picture echoes weaker.
+    var bi = -1;
+    for (i = E; i < c.length - E; i++) if (c[i] === max) { bi = i; break; }
+    var halfL = (Lmin + bi) / 2 - Lmin;
+    if (halfL > E) {
+      var w = Math.max(3, Math.round((Lmin + bi) * 0.015)), hb = -1, hv = -1;
+      for (i = Math.max(E, Math.floor(halfL - w)); i <= Math.min(c.length - E - 1, Math.ceil(halfL + w)); i++) if (c[i] > hv) { hv = c[i]; hb = i; }
+      if (hb > 0 && hv >= 0.93 * max) bi = hb;
     }
-    return null;
+    var m = c[bi], sum = 0, wt = 0;
+    for (var j = Math.max(0, bi - 6); j <= Math.min(c.length - 1, bi + 6); j++) {
+      var q = c[j] - m * 0.4; if (q > 0) { sum += q * j; wt += q; }
+    }
+    return { lag: Lmin + (wt ? sum / wt : bi), corr: m, index: bi };
   }
   // unwrapped angular error (rad) of the guess at radius r: positive = picture rotated forward
   function twistAt(truth, guess, r) {
@@ -260,6 +270,19 @@
     }
     cur.rms = Math.sqrt(c / readings.length);
     return cur;
+  }
+  // fit, then drop readings that miss by more than 2 frames (wrong echo picked) and refit
+  function fitRobust(readings, g, keys) {
+    var rd = readings.slice(), dropped = [], f = fit(rd, g, keys);
+    while (f && rd.length > keys.length + 1) {
+      var worst = -1, wi = -1;
+      rd.forEach(function (x, i) { var e = Math.abs(lagAt(f, x.n) - x.L); if (e > worst) { worst = e; wi = i; } });
+      if (worst < 2) break;
+      dropped.push(rd[wi]); rd.splice(wi, 1);
+      f = fit(rd, g, keys);
+    }
+    if (f) f.dropped = dropped;
+    return f;
   }
   function solve(A, b) { // Gaussian elimination with partial pivoting
     var n = b.length, i, j, k;
@@ -337,7 +360,7 @@
     mulberry32: mulberry32, hash32: hash32, strSeed: strSeed,
     frameLen: frameLen, forward: forward, inverse: inverse, thetaToN: thetaToN, framesTo: framesTo,
     framesPerRev: framesPerRev, makeBurn: makeBurn, frame: frame, decode: decode, warpAt: warpAt, twist: twist,
-    autocorr: autocorr, twistAt: twistAt, findPeak: findPeak, measureLag: measureLag, fit: fit, lagAt: lagAt, rOfTheta: rOfTheta, sOfTheta: sOfTheta, thetaOfR: thetaOfR,
+    autocorr: autocorr, twistAt: twistAt, findPeak: findPeak, measureLag: measureLag, fit: fit, fitRobust: fitRobust, lagAt: lagAt, rOfTheta: rOfTheta, sOfTheta: sOfTheta, thetaOfR: thetaOfR,
     makeFlag: makeFlag, normFlag: normFlag, encodeDrop: encodeDrop, decodeDrop: decodeDrop, randomTruth: randomTruth
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = D; else root.Disc = D;
