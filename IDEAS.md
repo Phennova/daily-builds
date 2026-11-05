@@ -27,6 +27,9 @@ you thought of but did not build.
 - race-window | game | exploit a TOCTOU race: swap a symlink between a privileged program's check and use, widen the window (slow path resolution) and win the race against a noisy scheduler (inspired by the WordPress TOCTOU CVE in CISA KEV, 2026-11-04) | security education, scheduler sim, timelines | 4/3/4 on 2026-11-04
 - neuron-carve | game | hand-place ReLU neurons as draggable half-planes to carve decision boundaries under a neuron budget (XOR, ring, spiral) | tiny MLP, canvas | 3/3/5 on 2026-11-04
 - slope-armor | game | design a tank's sloped armour (line-of-sight thickness, ricochet angles, weight budget) and survive incoming shells | ballistics sim | 3/4/4 on 2026-11-04 (military; space it)
+- memory-scan | game | Cheat-Engine-style reversing: scan a running toy DOS game's memory for changed values, freeze health, follow a pointer chain, patch a jump (inspired by Show HN "a decade of reversing to get co-op in DOS Wing Commander", 2026-11-04) | VM sim, hex view, security education | 4/3/4 on 2026-11-05
+- ghost-process | game | "Ghost in the Machine" (AI Game Jam theme, Oct-Nov 2026): find a hidden process in a simulated task manager through side channels (CPU time, handles, timing jitter) | systems sim, data viz | 3/3/4 on 2026-11-05
+- (reentry-footprint could also cover the Nov 2026 "save Hubble" reboost story: plan a reboost before decay)
 
 ## Interests of the user (use for inspiration, not as a straitjacket)
 Coding; cybersecurity (learning level: explain concepts in-app); running local AI on modest hardware; Steam games;
