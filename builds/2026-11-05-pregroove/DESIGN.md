@@ -89,6 +89,19 @@ Game (`game.js`, `index.html`, `style.css`):
 - Mobile-first layout (disc on top, controls below, big touch targets), keyboard: arrow keys jog the selected
   parameter, [ ] step size, Enter submits. prefers-reduced-motion disables the sheen animation and reveal spin.
 
+## Changes made during the build (2026-11-05)
+- r0 dropped as a tunable: from the stream alone the start radius is degenerate with v and p (a fitted geometry with
+  the wrong r0 just scales the picture), so r0 is fixed at the Red Book 25 mm. In its place: **pitch drift** (linear
+  change of pitch with radius), a real calibration term (DiscImageStudio fits a cubic track pitch). n0 was likewise
+  degenerate with (r0, phi0) and is gone.
+- Campaign: 1 Factory spec (v, small error), 2 Off-brand (v from nominal), 3 Second source (v, p), 4 Zoned pitch
+  (v, p, drift), 5 Worn CD-RW (v, p, phi0, 10% flipped frames, no ticks, smaller print).
+- Calibration rings instead of spokes: irregular tick rings at hub / mid / rim radii; the bench shows each ring's
+  offset (circular cross-correlation of the decoded ring with the known pattern), which is how a calibration
+  assistant measures bowing. Flag is arc text at r = 44 mm.
+- Scope fit is a damped Gauss-Newton over all readings with outlier rejection (half-turn echoes in symmetric parts
+  of the picture); blank stretches of track report "no echo".
+
 ## Definition of done
 - All 5 discs solvable by tuning in the browser with mouse and with touch emulation; flags are readable at the
   correct geometry and unreadable when an unknown is off by its starting error.
