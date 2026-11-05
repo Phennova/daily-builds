@@ -90,14 +90,43 @@ function agreement(guess, size) {
     rd.push({ n: m.n, L: m.peak.lag });
   });
   ok(worst < 0.5, 'lag scope within 0.5 frames of one revolution (worst ' + worst.toFixed(3) + ', ' + ms + ' ms per reading)');
-  var est = D.estimate(rd[0], rd[3], truth.r0);
+  var est = D.fit(rd, D.NOMINAL, ['v', 'p']);
   var ev = Math.abs(est.v / truth.v - 1), ep = Math.abs(est.p / truth.p - 1);
-  ok(ev < 1e-3 && ep < 1e-3, 'two-point estimate: v rel err ' + ev.toExponential(2) + ', p rel err ' + ep.toExponential(2));
+  ok(ev < 1e-4 && ep < 1e-4, 'fit v,p from nominal: v rel err ' + ev.toExponential(2) + ', p rel err ' + ep.toExponential(2) + ', rms ' + est.rms.toFixed(3));
+  var e1 = D.fit([rd[1]], Object.assign({}, truth, { v: 1300 }), ['v']);
+  ok(Math.abs(e1.v / truth.v - 1) < 3e-4, 'fit v alone from one reading: rel err ' + Math.abs(e1.v / truth.v - 1).toExponential(2));
   // with noise
   var noisy = D.makeBurn(truth, pic, { seed: 9, noise: 0.12 });
   var m = D.measureLag(noisy, Math.floor(noisy.nEnd * 0.5));
   D.forward(truth, m.n, t);
   ok(m.peak && Math.abs(m.peak.lag - D.framesPerRev(truth, t.r)) < 0.8, 'lag scope survives 12% burn noise (corr ' + (m.peak && m.peak.corr.toFixed(2)) + ')');
+})();
+
+// 4b. pitch drift geometry
+(function () {
+  var g = D.randomTruth(D.mulberry32(77), true), t = { r: 0, th: 0 }, worst = 0;
+  console.log('drift truth', JSON.stringify(g));
+  var nEnd = D.framesTo(g, D.R_OUT);
+  for (var i = 0; i < 2000; i++) {
+    var n = Math.floor(rng() * nEnd) + 0.5;
+    D.forward(g, n, t);
+    worst = Math.max(worst, Math.abs(D.inverse(g, t.r, t.th) - n));
+  }
+  ok(worst < 0.01, 'drift: forward/inverse round trip, worst ' + worst.toExponential(2));
+  var g0 = Object.assign({}, g, { a: 1e-13 }), g00 = Object.assign({}, g, { a: 0 });
+  var nn = nEnd * 0.7, t1 = { r: 0, th: 0 }, t2 = { r: 0, th: 0 };
+  D.forward(g0, nn, t1); D.forward(g00, nn, t2);
+  ok(Math.abs(t1.th - t2.th) < 1e-4, 'tiny drift matches the Archimedean spiral (dth ' + Math.abs(t1.th - t2.th).toExponential(2) + ')');
+  var b = D.makeBurn(g, pic, { seed: 3 }), rd = [];
+  [0.03, 0.2, 0.4, 0.6, 0.8, 0.95].forEach(function (f) { var m = D.measureLag(b, Math.floor(b.nEnd * f)); rd.push({ n: m.n, L: m.peak.lag }); });
+  var ft = D.fit(rd, D.NOMINAL, ['v', 'p', 'a']);
+  var prof = [27, 32, 40, 48, 56].map(function (r) { return D.twistAt(g, ft, r); });
+  var worstT = Math.max.apply(null, prof.map(Math.abs));
+  ok(worstT < 3.5, 'fit v,p,drift from 6 readings leaves twist <= ' + worstT.toFixed(2) + ' rad (profile ' + prof.map(function (x) { return x.toFixed(2); }).join(' ') + '), rms ' + ft.rms.toFixed(3));
+  var tz = Math.abs(D.twistAt(g, Object.assign({}, ft, { a: 0 }), 56));
+  ok(tz > 10, 'drift matters: dropping it twists the rim by ' + tz.toFixed(0) + ' rad');
+  var tw0 = D.twistAt(truth, Object.assign({}, truth, { v: truth.v * (1 + 1e-5) }), 56);
+  ok(Math.abs(tw0) > 0.5 && Math.abs(tw0) < 1.5, 'unwrapped twist at the rim for v + 1e-5: ' + tw0.toFixed(2) + ' rad');
 })();
 
 // 5. flags and dead-drop links

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07080c">
+<title>Pregroove: disc forensics</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+<header id="bar">
+  <button id="homeBtn" class="ghost" aria-label="Back to title">PREGROOVE</button>
+  <span id="discLabel"></span>
+  <span id="timer">0:00</span>
+  <button id="helpBtn" class="ghost icon" aria-label="How it works">?</button>
+  <button id="muteBtn" class="ghost icon" aria-label="Mute sound">&#9834;</button>
+</header>
+
+<section id="title" class="screen">
+  <canvas id="heroCv" width="520" height="520" aria-hidden="true"></canvas>
+  <div class="titleText">
+    <h1>PREGROOVE</h1>
+    <p class="tag">disc forensics for a filtered world</p>
+    <p class="lede">2031. The networks are filtered, so couriers carry blank CD-Rs. The message is not in the data:
+      it is the <em>picture the data burns</em> into the dye, and it only appears if you know the exact geometry of
+      the disc. You have the rip, not the disc. Rebuild the spiral until the picture snaps out of the noise, then read
+      the flag.</p>
+    <div class="btns">
+      <button id="startBtn" class="primary">Open the first case</button>
+      <button id="dropInBtn" class="primary" hidden>Open the incoming dead drop</button>
+      <button id="howBtn">How it works</button>
+      <button id="makeBtn">Make a dead drop</button>
+    </div>
+    <p class="fine">Five discs. Touch or mouse; keyboard works too. Best with sound.</p>
+  </div>
+</section>
+
+<section id="bench" class="screen" hidden>
+  <div id="viewWrap">
+    <canvas id="viewCv" width="480" height="480" aria-label="Decoded disc surface"></canvas>
+    <div id="viewNote"></div>
+  </div>
+  <div id="panel">
+    <div id="caseBox"><h2 id="caseTitle"></h2><p id="caseText"></p></div>
+    <div id="params"></div>
+    <div class="toolRow">
+      <button id="scopeBtn">Lag scope</button>
+      <button id="listenBtn">Listen to the track</button>
+      <button id="resetBtn">Reset guess</button>
+    </div>
+    <div id="scope" hidden>
+      <canvas id="scopeCv" width="600" height="150" aria-label="Autocorrelation of the stream"></canvas>
+      <div class="scopeRow">
+        <label for="scopePos">Track position <span id="scopePosLbl"></span></label>
+        <input id="scopePos" type="range" min="0.02" max="0.97" step="0.001" value="0.15">
+      </div>
+      <div class="scopeRow">
+        <button id="readBtn">Take reading</button>
+        <span id="readings">No readings yet.</span>
+      </div>
+      <div class="scopeRow">
+        <button id="estBtn" disabled>Estimate from 2 readings</button>
+        <span id="estNote"></span>
+      </div>
+    </div>
+    <form id="flagForm" autocomplete="off">
+      <label for="flagIn">Flag on the disc</label>
+      <div class="flagRow">
+        <input id="flagIn" type="text" placeholder="e.g. RAVEN-47" maxlength="40" spellcheck="false" autocapitalize="characters">
+        <button id="flagBtn" class="primary" type="submit">Submit</button>
+      </div>
+      <p id="flagMsg" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+<section id="reveal" class="screen overlay" hidden>
+  <div class="card">
+    <canvas id="revealCv" width="440" height="440" aria-label="The physical disc"></canvas>
+    <h2 id="revealTitle"></h2>
+    <p id="revealText"></p>
+    <div class="btns"><button id="nextBtn" class="primary">Next disc</button></div>
+  </div>
+</section>
+
+<section id="end" class="screen overlay" hidden>
+  <div class="card">
+    <h2>All five drops read</h2>
+    <table id="endTable"></table>
+    <p id="endText"></p>
+    <div class="btns">
+      <button id="againBtn" class="primary">New campaign (new discs)</button>
+      <button id="endMakeBtn">Make a dead drop</button>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="screen overlay" hidden>
+  <div class="card prose">
+    <h2>How it works</h2>
+    <p><b>A CD is one spiral.</b> About 20,000 turns, 1.6 micrometres apart, read at a constant linear speed of about
+      1.3 m/s. Every 1/7350 s of audio (one 24-byte frame) occupies the next ~0.18 mm of track. Burn a frame with
+      byte patterns that leave long marks and that stretch of dye goes dark; pick patterns with short marks and it
+      stays light. Choose every frame right and the whole disc shows a picture. Real tools do this today
+      (CDImage, DiscImageStudio).</p>
+    <p><b>Why it is fragile.</b> To know where frame number 20,000,000 lands, you multiply by the velocity and wrap
+      around the spiral twenty thousand times. Get the velocity wrong by one part in a hundred thousand and the outer
+      rings land a whole radian off: the picture twists into a swirl. That is why such images only work on the disc
+      model they were calibrated for.</p>
+    <p><b>Your controls.</b> <i>v</i> linear velocity, <i>p</i> track pitch, <i>r0</i> start radius, <i>&phi;0</i>
+      start angle. Drag a jog strip (or use - / +) to change a value; the step buttons choose how fine a step is.
+      Coarse first, then finer. Calibration spokes near the hub bow when the geometry is off: make them straight.</p>
+    <p><b>The lag scope.</b> Adjacent turns of the spiral are only 1.6 um apart, so they carry almost the same picture.
+      The stream therefore echoes itself after exactly one revolution. Autocorrelation finds that echo: the peak lag is
+      the number of frames per turn at that point. Two readings at different positions pin down the geometry (given a
+      start radius); your eyes do the last few digits.</p>
+    <p><b>Listen.</b> Plays the actual frames as audio. Dark and light frames are two sample patterns, so you hear
+      the picture as a rasp that flutters once per revolution.</p>
+    <p><b>Keyboard.</b> Up/Down pick a parameter, Left/Right jog it, [ and ] change the step, Enter submits the flag.</p>
+    <p class="fine">Model notes: frames are dark/light at the frame level; real burns also go through CIRC interleaving
+      and EFM modulation, which real tools pre-compensate. This game does not produce burnable files.</p>
+    <div class="btns"><button id="howClose" class="primary">Got it</button></div>
+  </div>
+</section>
+
+<section id="drop" class="screen overlay" hidden>
+  <div class="card prose">
+    <h2>Make a dead drop</h2>
+    <p>Type a short message. It gets burned onto a disc with random geometry, and you get a link. Whoever opens it has
+      to calibrate the disc to read it. (The link scrambles the text with a seed: a toy, not encryption.)</p>
+    <input id="dropMsg" type="text" maxlength="18" placeholder="MEET AT PIER 9" spellcheck="false" autocapitalize="characters">
+    <div class="btns">
+      <button id="dropMake" class="primary">Burn and make link</button>
+      <button id="dropClose">Close</button>
+    </div>
+    <p id="dropOut" class="mono"></p>
+  </div>
+</section>
+
+<div id="toast" aria-live="polite"></div>
+</div>
+<script src="disc.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

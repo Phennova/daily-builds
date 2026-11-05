@@ -28,34 +28,67 @@
   }
 
   // ---------- geometry ----------
-  // g = { r0: start radius (mm), p: track pitch (mm), v: linear velocity (mm/s), phi0: start angle (rad) }
+  // g = { r0: start radius (mm), p: track pitch at r0 (mm), v: linear velocity (mm/s), a: pitch drift (1/mm),
+  //       phi0: start angle (rad) }
   function frameLen(g) { return g.v / FPS; }
+  // Pitch may drift linearly with radius: pitch(r) = p * (1 + a * (r - r0)), a in 1/mm (g.a, default 0).
+  // Then dr/dtheta = pitch(r)/TAU gives r(theta) = r0 + expm1(x)/a with x = a*p*theta/TAU, and the arc length
+  // s(theta) = r0*theta + TAU/(a^2 p) * (expm1(x) - x). a = 0 is the plain Archimedean spiral.
+  function em1x(x) { // expm1(x) - x without cancellation
+    return Math.abs(x) < 1e-3 ? x * x * 0.5 * (1 + x / 3 * (1 + x / 4 * (1 + x / 5))) : Math.expm1(x) - x;
+  }
+  function rOfTheta(g, th) {
+    var a = g.a || 0;
+    if (a === 0) return g.r0 + g.p * th / TAU;
+    var x = a * g.p * th / TAU;
+    return g.r0 + (Math.abs(x) < 1e-9 ? g.p * th / TAU * (1 + x / 2) : Math.expm1(x) / a);
+  }
+  function sOfTheta(g, th) {
+    var a = g.a || 0;
+    if (a === 0) return g.r0 * th + g.p * th * th / (2 * TAU);
+    var x = a * g.p * th / TAU;
+    return g.r0 * th + TAU / (a * a * g.p) * em1x(x);
+  }
+  function thetaOfR(g, r) { // continuous turn angle where the spiral reaches radius r
+    var a = g.a || 0, d = r - g.r0;
+    if (a === 0) return TAU * d / g.p;
+    return TAU * Math.log1p(a * d) / (a * g.p);
+  }
+  function thetaOfS(g, S) {
+    var rc = Math.sqrt(g.r0 * g.r0 + g.p * S / Math.PI), th = TAU * (rc - g.r0) / g.p;
+    if (!g.a) return th;
+    for (var it = 0; it < 6; it++) {
+      var f = sOfTheta(g, th) - S;
+      th -= f / rOfTheta(g, th);
+      if (Math.abs(f) < 1e-7) break;
+    }
+    return th;
+  }
   // frame n (may be fractional) -> polar position on the disc. Returns false before the start.
   function forward(g, n, out) {
     if (n < 0) return false;
-    var s = n * g.v / FPS;
-    var r = Math.sqrt(g.r0 * g.r0 + g.p * s / Math.PI);
-    out.r = r;
-    out.th = TAU * (r - g.r0) / g.p + g.phi0;
+    var th = thetaOfS(g, n * g.v / FPS);
+    out.r = rOfTheta(g, th);
+    out.th = th + g.phi0;
     return true;
   }
   // turn angle theta (>= 0, measured from the start) -> frame index
-  function thetaToN(g, theta) {
-    var s = g.r0 * theta + g.p * theta * theta / (2 * TAU);
-    return s * FPS / g.v;
-  }
+  function thetaToN(g, theta) { return sOfTheta(g, theta) * FPS / g.v; }
   // point (r, phi) -> fractional frame index of the nearest spiral turn through that angle; -1 if none
   function inverse(g, r, phi) {
-    var a = (phi - g.phi0) / TAU;
-    a -= Math.floor(a);
-    var k = Math.round((r - g.r0) / g.p - a);
+    var f = (phi - g.phi0) / TAU;
+    f -= Math.floor(f);
+    var k = Math.round(thetaOfR(g, r) / TAU - f);
     if (k < 0) return -1;
-    return thetaToN(g, TAU * (k + a));
+    return thetaToN(g, TAU * (k + f));
   }
-  function framesTo(g, r) { // frame index where the spiral reaches radius r
-    return Math.PI * (r * r - g.r0 * g.r0) / g.p * FPS / g.v;
-  }
+  function framesTo(g, r) { return thetaToN(g, thetaOfR(g, r)); } // frame index where the spiral reaches r
   function framesPerRev(g, r) { return TAU * r / frameLen(g); }
+  // frames in one full turn starting at frame n (what the lag scope measures)
+  function lagAt(g, n) {
+    var th = thetaOfS(g, n * g.v / FPS);
+    return (sOfTheta(g, th + TAU) - sOfTheta(g, th)) * FPS / g.v;
+  }
 
   // ---------- picture -> stream ----------
   var BAYER = (function () {
@@ -157,19 +190,26 @@
     }
     return c;
   }
-  // first strong peak (avoids picking 2 revolutions); parabolic refinement
+  // first strong peak (avoids picking 2 revolutions); sub-frame position by the centroid of the peak top
   function findPeak(c, Lmin) {
     var max = -1, i;
     for (i = 1; i < c.length - 1; i++) if (c[i] > max) max = c[i];
     for (i = 1; i < c.length - 1; i++) {
       if (c[i] >= c[i - 1] && c[i] >= c[i + 1] && c[i] >= 0.8 * max) {
-        var a = c[i - 1], m = c[i], z = c[i + 1], den = a - 2 * m + z;
-        var off = den !== 0 ? 0.5 * (a - z) / den : 0;
-        if (off > 0.5) off = 0.5; if (off < -0.5) off = -0.5;
-        return { lag: Lmin + i + off, corr: m, index: i };
+        var m = c[i], s = 0, w = 0;
+        for (var j = Math.max(0, i - 6); j <= Math.min(c.length - 1, i + 6); j++) {
+          var q = c[j] - m * 0.4; if (q > 0) { s += q * j; w += q; }
+        }
+        return { lag: Lmin + (w ? s / w : i), corr: m, index: i };
       }
     }
     return null;
+  }
+  // unwrapped angular error (rad) of the guess at radius r: positive = picture rotated forward
+  function twistAt(truth, guess, r) {
+    var n = framesTo(guess, r), t = { r: 0, th: 0 }, u = { r: 0, th: 0 };
+    forward(truth, n, t); forward(guess, n, u);
+    return t.th - u.th;
   }
   var SCOPE = { W: 6000, Lmin: 600, Lmax: 2600 };
   function measureLag(b, n0) {
@@ -177,14 +217,70 @@
     var pk = findPeak(c, SCOPE.Lmin);
     return { n: n0 + SCOPE.W / 2, curve: c, peak: pk };
   }
-  // two readings {n, L} + assumed start radius r0 -> {v, p}.  L^2 = (TAU*FPS/v)^2 r0^2 + (2*TAU*FPS*p/v) n
-  function estimate(r1, r2, r0) {
-    var B = (r2.L * r2.L - r1.L * r1.L) / (r2.n - r1.n);
-    var A = r1.L * r1.L - B * r1.n;
-    if (!(A > 0) || !(B > 0)) return null;
-    var v = TAU * FPS * r0 / Math.sqrt(A);
-    var p = B * v / (2 * TAU * FPS);
-    return { v: v, p: p };
+  // Fit the unknown parameters (subset of 'v', 'p', 'a') of guess g to lag readings [{n, L}], by damped
+  // Gauss-Newton on relative parameter changes. Returns a new geometry (or null if it cannot fit).
+  var FIT_SCALE = { v: 1300, p: 0.0016, a: 1e-3 };
+  function fit(readings, g, keys) {
+    keys = keys.filter(function (k) { return k in FIT_SCALE; });
+    if (!keys.length || readings.length < keys.length) return null;
+    var cur = Object.assign({ a: 0 }, g), lam = 1e-3, m = keys.length;
+    function resid(q) {
+      return readings.map(function (rd) { return lagAt(q, rd.n) - rd.L; });
+    }
+    function cost(res) { return res.reduce(function (s, x) { return s + x * x; }, 0); }
+    var res = resid(cur), c = cost(res);
+    for (var it = 0; it < 60; it++) {
+      // Jacobian by finite differences in scaled units
+      var J = readings.map(function () { return new Array(m).fill(0); });
+      keys.forEach(function (k, j) {
+        var h = FIT_SCALE[k] * 1e-7, q = Object.assign({}, cur); q[k] += h;
+        var r2 = resid(q);
+        for (var i = 0; i < readings.length; i++) J[i][j] = (r2[i] - res[i]) / 1e-7;
+      });
+      // normal equations (J^T J + lam diag) d = -J^T r
+      var A = [], bv = [];
+      for (var a1 = 0; a1 < m; a1++) {
+        A.push(new Array(m).fill(0)); bv.push(0);
+        for (var i2 = 0; i2 < readings.length; i2++) bv[a1] -= J[i2][a1] * res[i2];
+        for (var a2 = 0; a2 < m; a2++) for (var i3 = 0; i3 < readings.length; i3++) A[a1][a2] += J[i3][a1] * J[i3][a2];
+      }
+      var improved = false;
+      for (var tries = 0; tries < 12 && !improved; tries++) {
+        var M = A.map(function (row, ii) { return row.map(function (x, jj) { return ii === jj ? x * (1 + lam) + 1e-12 : x; }); });
+        var d = solve(M, bv.slice());
+        if (!d) { lam *= 10; continue; }
+        var q2 = Object.assign({}, cur);
+        keys.forEach(function (k, j) { q2[k] += d[j] * FIT_SCALE[k]; });
+        if (q2.v <= 0 || q2.p <= 0) { lam *= 10; continue; }
+        var r3 = resid(q2), c3 = cost(r3);
+        if (c3 < c) { cur = q2; res = r3; c = c3; lam = Math.max(lam / 5, 1e-9); improved = true; }
+        else lam *= 10;
+      }
+      if (!improved || c < 1e-10) break;
+    }
+    cur.rms = Math.sqrt(c / readings.length);
+    return cur;
+  }
+  function solve(A, b) { // Gaussian elimination with partial pivoting
+    var n = b.length, i, j, k;
+    for (i = 0; i < n; i++) {
+      var piv = i;
+      for (j = i + 1; j < n; j++) if (Math.abs(A[j][i]) > Math.abs(A[piv][i])) piv = j;
+      if (Math.abs(A[piv][i]) < 1e-300) return null;
+      var t = A[i]; A[i] = A[piv]; A[piv] = t; var tb = b[i]; b[i] = b[piv]; b[piv] = tb;
+      for (j = i + 1; j < n; j++) {
+        var f = A[j][i] / A[i][i];
+        for (k = i; k < n; k++) A[j][k] -= f * A[i][k];
+        b[j] -= f * b[i];
+      }
+    }
+    var x = new Array(n);
+    for (i = n - 1; i >= 0; i--) {
+      var s = b[i];
+      for (j = i + 1; j < n; j++) s -= A[i][j] * x[j];
+      x[i] = s / A[i][i];
+    }
+    return x;
   }
 
   // ---------- flags / links ----------
@@ -223,23 +319,25 @@
   }
 
   // nominal geometry and the physical ranges a disc may have
-  var NOMINAL = { r0: 25, p: 0.0016, v: 1300, phi0: 0 };
-  var RANGE = { r0: [24, 26], p: [0.00150, 0.00170], v: [1150, 1450], phi0: [-Math.PI, Math.PI] };
-  function randomTruth(rng) {
+  // r0 is fixed at the Red Book programme-area start (25 mm): from the stream alone, the absolute size of the
+  // disc is degenerate with v and p (only its proportions show), so it is not a tunable here.
+  var NOMINAL = { r0: 25, p: 0.0016, v: 1300, a: 0, phi0: 0 };
+  function randomTruth(rng, drift) {
     return {
-      r0: 24.6 + rng() * 0.8,
+      r0: 25,
       p: 0.00154 + rng() * 0.00012,
       v: 1200 + rng() * 200,
+      a: drift ? (rng() < 0.5 ? -1 : 1) * (0.15e-3 + rng() * 0.3e-3) : 0,
       phi0: (rng() * 2 - 1) * Math.PI
     };
   }
 
   var D = {
-    FPS: FPS, R_OUT: R_OUT, R_HOLE: R_HOLE, NOMINAL: NOMINAL, RANGE: RANGE, SCOPE: SCOPE, WORDS: WORDS,
+    FPS: FPS, R_OUT: R_OUT, R_HOLE: R_HOLE, NOMINAL: NOMINAL, SCOPE: SCOPE, WORDS: WORDS,
     mulberry32: mulberry32, hash32: hash32, strSeed: strSeed,
     frameLen: frameLen, forward: forward, inverse: inverse, thetaToN: thetaToN, framesTo: framesTo,
     framesPerRev: framesPerRev, makeBurn: makeBurn, frame: frame, decode: decode, warpAt: warpAt, twist: twist,
-    autocorr: autocorr, findPeak: findPeak, measureLag: measureLag, estimate: estimate,
+    autocorr: autocorr, twistAt: twistAt, findPeak: findPeak, measureLag: measureLag, fit: fit, lagAt: lagAt, rOfTheta: rOfTheta, sOfTheta: sOfTheta, thetaOfR: thetaOfR,
     makeFlag: makeFlag, normFlag: normFlag, encodeDrop: encodeDrop, decodeDrop: decodeDrop, randomTruth: randomTruth
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = D; else root.Disc = D;
