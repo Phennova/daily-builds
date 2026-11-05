@@ -103,6 +103,14 @@
       ctx.lineWidth = 0.35 * K;
       [25.6, 31.4].forEach(function (r) { ctx.beginPath(); ctx.arc(c, c, r * K, 0, TAU); ctx.stroke(); });
     }
+    if (!spec.ticks) { // no calibration ticks: faint burn-in dashes (decor, but they also give the echo something to lock onto at every radius)
+      var dr = D.mulberry32(77);
+      for (var q = 0; q < 9000; q++) {
+        var rr = 26.2 + dr() * 31, a0 = dr() * TAU, sz = (0.25 + dr() * 0.3) * K;
+        if ((rr > 39.5 && rr < 48.5) || rr > 53.6) continue;
+        ctx.fillRect(c + rr * K * Math.cos(a0), c - rr * K * Math.sin(a0), sz, sz);
+      }
+    }
     arcText(ctx, spec.flag, 44, spec.small ? 5.2 : 6.6, true);
     if (spec.line2) arcText(ctx, spec.line2, 43.6, 4.2, false);
     if (spec.title) arcText(ctx, spec.title, 56.3, 2.6, true, '600');
@@ -125,8 +133,8 @@
       text: 'Unknown dye, unknown speed: the picture is noise. Open the lag scope. Neighbouring turns of the spiral carry the same picture, so the stream echoes itself once per revolution. Take a reading, fit v, then finish by eye with the fine steps.' },
     { name: 'Second source', unknown: ['v', 'p'], ticks: true, noise: 0, drift: false, readout: true,
       text: 'Velocity and track pitch are both unknown, and they trade off against each other: one reading cannot separate them. Take readings spread across the whole disc, fit both, then null the ring offsets. Pitch errors grow towards the rim faster than velocity errors.' },
-    { name: 'Zoned pitch', unknown: ['v', 'p', 'a'], ticks: true, noise: 0, drift: true, readout: true,
-      text: 'This burner\'s pitch drifts across the disc (real calibration tools fit it with a polynomial). With a constant pitch the hub and the rim never line up at once. Take many readings, fit all three, then balance hub, mid and rim.' },
+    { name: 'Zoned pitch', unknown: ['v', 'p'], ticks: true, noise: 0, drift: true, readout: true,
+      text: 'This burn is on a drifting pitch: it widens across the disc, and the drift (ppm per mm) is printed on the label because the model needs it. The echo lag now bends with radius. Take readings spread across the disc, fit v and p, then balance hub, mid and rim.' },
     { name: 'Worn CD-RW', unknown: ['v', 'p', 'phi0'], ticks: false, noise: 0.1, drift: false, readout: false, small: true,
       text: 'Rewritten a hundred times: one frame in ten is flipped, there are no calibration ticks, and the start angle is lost, so the picture may come out rotated. Scope, fit, then trust your eyes. Smaller print, too.' }
   ];
@@ -140,9 +148,10 @@
 
   var S = { li: 0, results: [], drop: null };
 
-  function setupLevel(li, dropSpec) {
+  function setupLevel(li, dropSpec, tryNo, seedIn) {
+    tryNo = tryNo || 0;
     var L = dropSpec ? dropSpec.level : LEVELS[li];
-    var seed = dropSpec ? dropSpec.seed : (Q.get('seed') ? D.strSeed(Q.get('seed') + ':' + li) : (Math.random() * 4294967296) >>> 0);
+    var seed = seedIn != null ? seedIn : dropSpec ? dropSpec.seed : (Q.get('seed') ? D.strSeed(Q.get('seed') + ':' + li) : (Math.random() * 4294967296) >>> 0);
     var rng = D.mulberry32(seed);
     var truth = D.randomTruth(rng, L.drift);
     if (!L.unknown.includes('phi0')) truth.phi0 = 0; // label orientation known: picture comes out upright
@@ -153,6 +162,14 @@
       title: LABELS[dropSpec ? 0 : li], title2: dropSpec ? 'CALIBRATE TO READ' : 'CASE ' + (1000 + Math.floor(rng() * 9000))
     });
     var burn = D.makeBurn(truth, picture.pic, { noise: L.noise, seed: seed });
+    if (!dropSpec && tryNo < 20 && !Q.has('noVet')) { // re-roll discs where an ordinary 8-reading scope fit leaves too much twist to finish by eye
+      var vg = Object.assign({}, truth), vk = L.unknown.filter(function (k) { return k !== 'phi0'; }), vr = [];
+      vk.forEach(function (k) { vg[k] = D.NOMINAL[k]; });
+      for (var fr = 0.05; fr < 0.97; fr += 0.04) { var vm = D.measureLag(burn, Math.floor(burn.nEnd * fr)); if (vm.peak) vr.push({ n: vm.n, L: vm.peak.lag }); }
+      var vf = vr.length >= vk.length + 2 ? D.fitRobust(vr, vg, vk) : null, vt = 99;
+      if (vf) { vt = 0; for (var rr = 27; rr <= 57; rr += 3) vt = Math.max(vt, Math.abs(D.twistAt(truth, vf, rr))); }
+      if (vt > (L.readout ? 1.5 : 1.0)) return setupLevel(li, dropSpec, tryNo + 1, D.hash32(seed + tryNo + 1) >>> 0);
+    }
     var guess = Object.assign({}, truth);
     L.unknown.forEach(function (k) {
       if (L.start && L.start[k]) guess[k] = truth[k] * (1 + (rng() < 0.5 ? -1 : 1) * L.start[k]);
@@ -647,6 +664,56 @@
     document.querySelectorAll('*').forEach(function (el) { var b = el.getBoundingClientRect(); if (b.right > vw + 1 && b.width) bad.push(el.tagName + '#' + el.id + '.' + el.className + ' ' + Math.round(b.left) + '-' + Math.round(b.right)); });
     var pre = document.createElement('pre'); pre.id = 'selftest'; pre.textContent = 'vw ' + vw + ' sw ' + document.documentElement.scrollWidth + '\n' + bad.slice(0, 15).join('\n'); document.body.appendChild(pre);
   }, 800);
+  function playtest() {
+    var out = [], okAll = true, seeds = ['a', 'b', 'c', 'd'];
+    for (var li = 0; li < LEVELS.length; li++) seeds.forEach(function (sd) {
+      Q = new URLSearchParams('seed=' + sd + (location.search.indexOf('errs') >= 0 ? '&errs=1' : '') + (location.search.indexOf('novet') >= 0 ? '&noVet=1' : ''));
+      startLevel(li);
+      var rd = [];
+      for (var fr = 0.05; fr < 0.97; fr += 0.04) { var m = D.measureLag(S.burn, Math.floor(S.burn.nEnd * fr)); if (m.peak) rd.push({ n: m.n, L: m.peak.lag }); }
+      if (location.search.indexOf('dbg') >= 0 && li === 4) { var ds = []; for (var f2 = 0.05; f2 < 0.97; f2 += 0.04) { var mm2 = D.measureLag(S.burn, Math.floor(S.burn.nEnd * f2)), cc = mm2.curve, mx = -9, tl = Math.round(D.lagAt(S.truth, mm2.n)) - D.SCOPE.Lmin; for (var qq = 4; qq < cc.length - 4; qq++) if (cc[qq] > mx) mx = cc[qq]; ds.push((cc.blank ? 'B' : mx.toFixed(2)) + '/' + (cc.blank ? '-' : cc[tl].toFixed(2))); } out.push('     dbg ' + ds.join(' ')); }
+      if (Q.has('errs')) out.push('     errs ' + rd.map(function (x) { return (x.L - D.lagAt(S.truth, x.n)).toFixed(3) + '@' + (D.lagAt(S.truth, x.n)).toFixed(0); }).join(' '));
+      var keys = S.L.unknown.filter(function (k) { return k === 'v' || k === 'p' || k === 'a'; });
+      var f = D.fitRobust(rd, S.guess, keys), tw0 = -1, tw1 = -1, line;
+      if (f) { keys.forEach(function (k) { S.guess[k] = f[k]; }); tw0 = residual(); }
+      var steps = 0;
+      if (S.L.readout) { // emulate the player: nudge v/p/a to null the ring offsets, coarse to fine
+        var offs = function () { return BANDS.map(function (b, i) { var o = ringOffset(i); return o ? o.off : 0; }); };
+        for (var it = 0; it < 12; it++) { // Gauss-Newton on the three ring offsets (what a careful player does by hand)
+          var o0 = offs(), J = keys.map(function (k) {
+            var h = (k === 'v' ? 1300 : k === 'p' ? 0.0016 : 1e-3) * (k === 'a' ? 0.02 : 1e-6), sv = S.guess[k]; S.guess[k] = sv + h; var o1 = offs(); S.guess[k] = sv;
+            return o1.map(function (x, i) { return (x - o0[i]) / h; });
+          });
+          var m = keys.length, A = [], bv = [];
+          for (var i = 0; i < m; i++) { A.push([]); bv.push(0); for (var j = 0; j < m; j++) { var sum = 0; for (var q = 0; q < 3; q++) sum += J[i][q] * J[j][q]; A[i].push(sum + (i === j ? 1e-3 * Math.abs(sum) + 1e-12 : 0)); } for (q = 0; q < 3; q++) bv[i] -= J[i][q] * o0[q]; }
+          var dd = D.solveLin ? D.solveLin(A, bv) : null; if (!dd) break;
+          var base = o0.reduce(function (t, x) { return t + Math.abs(x); }, 0), sv0 = Object.assign({}, S.guess), lamb = 1;
+          for (var h2 = 0; h2 < 6; h2++) {
+            keys.forEach(function (k, i) { S.guess[k] = sv0[k] + lamb * dd[i]; });
+            if (offs().reduce(function (t, x) { return t + Math.abs(x); }, 0) < base) break;
+            lamb /= 2; Object.assign(S.guess, sv0);
+          }
+          steps++;
+        }
+      }
+      tw1 = residual();
+      var size = 220, o = new Float32Array(size * size);
+      D.decode(S.burn, S.guess, size, 1, o);
+      var same = 0, tot = 0;
+      for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
+        var mx = -60 + (x + .5) * 120 / size, my = 60 - (y + .5) * 120 / size, r = Math.hypot(mx, my), v = o[y * size + x];
+        if (r < 27 || r > 57 || v < 0) continue; tot++; if ((v > .5) === (S.picture.pic(mx, my) > .5)) same++;
+      }
+      var good; good = S.L.unknown.indexOf('phi0') >= 0 ? true : same / tot > 0.97;
+      if (S.L.readout && tw1 > 0.3) good = false;
+      if (!S.L.readout && tw1 > 1.0) good = false;
+      if (!f || !good) okAll = false;
+      out.push((good && f ? 'ok   ' : 'FAIL ') + 'L' + (li + 1) + ' seed ' + sd + ': readings ' + rd.length + ' twist after fit ' + tw0.toFixed(2) + ' after ring-nulling ' + tw1.toFixed(3) + ' (' + steps + ' moves) match ' + (100 * same / tot).toFixed(0) + '%');
+    });
+    var pre = document.createElement('pre'); pre.id = 'selftest'; pre.textContent = (okAll ? 'PLAYTEST PASS' : 'PLAYTEST FAIL') + '\n' + out.join('\n');
+    document.body.appendChild(pre);
+  }
+  if (Q.has('playtest')) playtest(); else
   if (Q.has('selftest')) selftest();
   else if (demo !== null || lvl) {
     var li = clamp((+lvl || (demo === 'reveal' ? 5 : 3)) - 1, 0, LEVELS.length - 1);

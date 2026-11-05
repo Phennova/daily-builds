@@ -223,9 +223,10 @@
   }
   var SCOPE = { W: 6000, Lmin: 600, Lmax: 2600 };
   function measureLag(b, n0) {
-    var c = autocorr(b, n0, SCOPE.W, SCOPE.Lmin, SCOPE.Lmax);
+    var W = b.noise > 0 ? SCOPE.W * 3 : SCOPE.W; // a worn (noisy) disc needs a longer integration
+    var c = autocorr(b, n0, W, SCOPE.Lmin, SCOPE.Lmax);
     var pk = findPeak(c, SCOPE.Lmin);
-    return { n: n0 + SCOPE.W / 2, curve: c, peak: pk };
+    return { n: n0 + W / 2, curve: c, peak: pk };
   }
   // Fit the unknown parameters (subset of 'v', 'p', 'a') of guess g to lag readings [{n, L}], by damped
   // Gauss-Newton on relative parameter changes. Returns a new geometry (or null if it cannot fit).
@@ -277,7 +278,7 @@
     while (f && rd.length > keys.length + 1) {
       var worst = -1, wi = -1;
       rd.forEach(function (x, i) { var e = Math.abs(lagAt(f, x.n) - x.L); if (e > worst) { worst = e; wi = i; } });
-      if (worst < 2) break;
+      if (worst < (rd.length > keys.length + 3 ? 0.12 : 2)) break;
       dropped.push(rd[wi]); rd.splice(wi, 1);
       f = fit(rd, g, keys);
     }
@@ -363,5 +364,6 @@
     autocorr: autocorr, twistAt: twistAt, findPeak: findPeak, measureLag: measureLag, fit: fit, fitRobust: fitRobust, lagAt: lagAt, rOfTheta: rOfTheta, sOfTheta: sOfTheta, thetaOfR: thetaOfR,
     makeFlag: makeFlag, normFlag: normFlag, encodeDrop: encodeDrop, decodeDrop: decodeDrop, randomTruth: randomTruth
   };
+  D.solveLin = solve;
   if (typeof module !== 'undefined' && module.exports) module.exports = D; else root.Disc = D;
 })(this);
