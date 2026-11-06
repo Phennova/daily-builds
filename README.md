@@ -15,6 +15,7 @@ screenshot.
 | 4 | 2026-11-03 | [Blade Rate](builds/2026-11-03-blade-rate/) | Game (passive sonar, signal processing) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-03-blade-rate/) |
 | 5 | 2026-11-04 | [Road Cut](builds/2026-11-04-road-cut/) | Game (geology puzzle, procedural simulation) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-04-road-cut/) |
 | 6 | 2026-11-05 | [Pregroove](builds/2026-11-05-pregroove/) | Game (disc forensics, spiral geometry, CTF) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-05-pregroove/) |
+| 7 | 2026-11-06 | [Light Alibi](builds/2026-11-06-light-alibi/) | Game (network forensics, speed-of-light geolocation) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-06-light-alibi/) |
 
 ## Rules of the house
 - Nothing basic: each build needs a distinctive idea, not a clone with a coat of paint.
