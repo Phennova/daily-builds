@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070d16">
+<title>Light Alibi - catch lying proxies with the speed of light</title>
+<link rel="icon" href="data:,">
+<style>
+:root{--bg:#070d16;--panel:#0d1624;--line:#1d2b40;--ink:#d8e3ef;--dim:#8193a8;--cyan:#7fd6ff;--amber:#ffbf5e;--red:#ff6b6b;--green:#7ee0a1;
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit;background:#15233a;border:1px solid #2a3d5a;border-radius:8px;padding:8px 12px;cursor:pointer;touch-action:manipulation}
+button:hover:not(:disabled){border-color:var(--cyan)}
+button:disabled{opacity:.4;cursor:default}
+button.primary{background:#1d4a6b;border-color:#3d86b5;font-weight:600}
+button.danger{background:#4a1d27;border-color:#a5434f}
+button.sel{outline:2px solid var(--amber);outline-offset:1px}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+#app{position:fixed;inset:0;display:grid;grid-template-columns:1fr 380px;grid-template-rows:auto 1fr;padding:var(--sat) var(--sar) 0 var(--sal)}
+header{grid-column:1/3;display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);min-width:0}
+header h1{font-size:15px;letter-spacing:.18em;margin:0;font-weight:700;white-space:nowrap}
+header h1 span{color:var(--cyan)}
+#caseLabel{color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+#scoreLabel{font-variant-numeric:tabular-nums;white-space:nowrap}
+.iconbtn{padding:6px 9px;min-width:36px}
+#globeWrap{position:relative;min-height:0;min-width:0;touch-action:none}
+#globe{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+#globe.dragging{cursor:grabbing}
+#zoomCtl{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px}
+#zoomCtl button{width:38px;height:38px;padding:0;font-size:18px;background:rgba(21,35,58,.85)}
+#legend{position:absolute;left:10px;bottom:10px;font-size:12px;color:var(--dim);background:rgba(7,13,22,.75);padding:6px 8px;border-radius:8px;pointer-events:none;max-width:60%}
+#legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 8px;vertical-align:-1px}
+#legend i:first-child{margin-left:0}
+#toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(13,22,36,.92);border:1px solid var(--line);padding:7px 12px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90%;text-align:center}
+#toast.show{opacity:1}
+#panel{border-left:1px solid var(--line);background:var(--panel);overflow-y:auto;padding:12px 12px calc(12px + var(--sab));display:flex;flex-direction:column;gap:12px;min-height:0}
+.card{border:1px solid var(--line);border-radius:10px;padding:10px;background:#0a1220}
+.card h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin:0 0 6px;font-weight:600}
+#claimCity{font-size:18px;font-weight:700;color:var(--red)}
+#claimMeta{color:var(--dim);font-size:12px}
+#brief{margin:6px 0 0}
+#budget{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+#budget .pip{width:14px;height:14px;border-radius:50%;border:1px solid var(--cyan)}
+#budget .pip.on{background:var(--cyan)}
+#selfRow{margin-top:8px;display:none}
+#selfRow.on{display:block}
+#selfInfo{font-size:12px;color:var(--dim);margin-top:4px}
+#probeList{display:flex;flex-direction:column;gap:4px;max-height:none}
+.prow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:6px 8px;border-radius:8px;border:1px solid transparent;background:#0f1a2b;cursor:pointer;text-align:left}
+.prow:hover{border-color:#2a3d5a}
+.prow.done{cursor:default;background:#0c1626}
+.prow.off{opacity:.45;cursor:default}
+.prow .nm{font-weight:600}
+.prow .ds{color:var(--dim);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.prow .res{grid-column:1/3;font-size:12px;font-variant-numeric:tabular-nums;color:var(--cyan)}
+.prow .res b.x{color:var(--red)}
+.prow .res b.in{color:var(--dim);font-weight:400}
+#filterRow{display:flex;gap:6px;margin-bottom:6px}
+#filterRow input{flex:1;min-width:0;background:#0f1a2b;border:1px solid #2a3d5a;color:var(--ink);border-radius:8px;padding:7px 9px;font:inherit}
+#status{font-size:13px}
+#status .x{color:var(--red);font-weight:600}
+#verdictBtns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+#pinInfo{font-size:12px;color:var(--dim);margin-top:6px}
+#submitBtn{width:100%;margin-top:8px}
+.overlay{position:fixed;inset:0;background:rgba(4,8,14,.78);display:none;align-items:center;justify-content:center;padding:calc(16px + var(--sat)) 16px calc(16px + var(--sab));z-index:10}
+.overlay.on{display:flex}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:520px;width:100%;max-height:100%;overflow-y:auto;padding:18px}
+.modal h2{margin:0 0 4px;font-size:20px}
+.modal p{margin:8px 0}
+.modal .row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px dashed var(--line);font-variant-numeric:tabular-nums}
+.modal .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.modal .btns button{flex:1}
+.lesson{border-left:3px solid var(--cyan);padding:6px 10px;background:#0a1220;border-radius:0 8px 8px 0}
+#intro .modal{max-width:560px}
+.big{font-size:30px;letter-spacing:.2em;font-weight:800;margin:0}
+.big span{color:var(--cyan)}
+.tag{color:var(--dim);margin-top:2px}
+.eq{font-family:ui-monospace,Consolas,monospace;background:#0a1220;border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center;color:var(--amber)}
+ol.how{padding-left:20px;margin:8px 0}
+ol.how li{margin:4px 0}
+.small{font-size:12px;color:var(--dim)}
+@media (max-width:820px),(orientation:portrait) and (max-width:1000px){
+  #app{grid-template-columns:1fr;grid-template-rows:auto minmax(240px,52vh) 1fr}
+  header{grid-column:1}
+  #panel{border-left:0;border-top:1px solid var(--line)}
+  #legend{font-size:11px;max-width:70%}
+}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>LIGHT <span>ALIBI</span></h1>
+    <div id="caseLabel">-</div>
+    <div id="scoreLabel" class="mono">0 pts</div>
+    <button id="helpBtn" class="iconbtn" aria-label="How to play" title="How to play">?</button>
+    <button id="muteBtn" class="iconbtn" aria-label="Mute" title="Mute">&#128266;</button>
+  </header>
+  <div id="globeWrap">
+    <canvas id="globe" aria-label="Globe. Drag to rotate, tap a landmark to probe, tap elsewhere to place your pin."></canvas>
+    <div id="legend"><i style="background:#7fd6ff"></i>disk <i style="background:#ffbf5e"></i>possible region <i style="background:#ff6b6b"></i>claim <i style="background:#ffffff"></i>landmark</div>
+    <div id="zoomCtl"><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">&minus;</button><button id="zHome" aria-label="Centre on claim" title="Centre on claim">&#9678;</button></div>
+    <div id="toast"></div>
+  </div>
+  <div id="panel">
+    <div class="card">
+      <h2 id="caseTitle">Case</h2>
+      <div id="claimCity">-</div>
+      <div id="claimMeta" class="mono">-</div>
+      <p id="brief"></p>
+    </div>
+    <div class="card">
+      <h2>Probes</h2>
+      <div id="budget"></div>
+      <div id="selfRow"><button id="selfBtn" style="width:100%">Measure my own leg (C)</button><div id="selfInfo"></div></div>
+    </div>
+    <div class="card">
+      <h2>Landmarks <span class="small" style="text-transform:none;letter-spacing:0">(nearest to the claim first; or tap them on the globe)</span></h2>
+      <div id="filterRow"><input id="filter" type="search" placeholder="Filter cities" aria-label="Filter landmark cities"></div>
+      <div id="probeList"></div>
+    </div>
+    <div class="card">
+      <h2>Verdict</h2>
+      <div id="status">No measurements yet.</div>
+      <div id="verdictBtns"><button id="vImp" class="danger">Claim is physically impossible</button><button id="vCant">Can't disprove it</button></div>
+      <div id="pinInfo">Tap the globe where you think the exit really is.</div>
+      <button id="submitBtn" class="primary" disabled>File report</button>
+    </div>
+    <div class="small" id="footNote">Model: 200 km per ms (light in fibre, ~2/3 c). Pings only add delay, so every disk is a hard upper bound.</div>
+  </div>
+</div>
+
+<div id="intro" class="overlay on"><div class="modal">
+  <p class="big">LIGHT <span>ALIBI</span></p>
+  <div class="tag">Proxy exits lie about where they are. Light in fibre doesn't.</div>
+  <p>You verify VPN and residential-proxy exits for a streaming platform. Each one claims a city. Databases can be faked; round-trip times can't be made faster than physics.</p>
+  <div class="eq">max distance = (RTT / 2) &times; 200 km/ms</div>
+  <ol class="how">
+    <li><b>Probe</b> the exit from landmark servers (tap them on the globe or in the list). Each ping draws a disk the exit must be inside.</li>
+    <li>If the <b style="color:var(--red)">claimed city</b> is outside any disk, the claim is <b>physically impossible</b>. Otherwise you can't disprove it (you can never prove it true).</li>
+    <li><b>Pin</b> where you think it really is, inside the <b style="color:var(--amber)">region</b> every disk allows, and file the report.</li>
+  </ol>
+  <p class="small">Drag to spin the globe, pinch or scroll to zoom. Probes are limited. Based on Constraint-Based Geolocation and Weinberg et al., "How to Catch when Proxies Lie" (IMC 2018).</p>
+  <div class="btns"><button id="startBtn" class="primary">Start shift (5 cases)</button><button id="nightBtn">Night shift (endless)</button></div>
+</div></div>
+
+<div id="result" class="overlay"><div class="modal" id="resultBody"></div></div>
+
+<script src="land.js"></script>
+<script src="core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

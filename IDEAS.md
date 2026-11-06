@@ -30,6 +30,10 @@ you thought of but did not build.
 - slope-armor | game | design a tank's sloped armour (line-of-sight thickness, ricochet angles, weight budget) and survive incoming shells | ballistics sim | 3/4/4 on 2026-11-04 (military; space it)
 - memory-scan | game | Cheat-Engine-style reversing: scan a running toy DOS game's memory for changed values, freeze health, follow a pointer chain, patch a jump (inspired by Show HN "a decade of reversing to get co-op in DOS Wing Commander", 2026-11-04) | VM sim, hex view, security education | 4/3/4 on 2026-11-05
 - ghost-process | game | "Ghost in the Machine" (AI Game Jam theme, Oct-Nov 2026): find a hidden process in a simulated task manager through side channels (CPU time, handles, timing jitter) | systems sim, data viz | 3/3/4 on 2026-11-05
+- reflow | game | Lemmings where the level is a real HTML document: change CSS (flex-direction, margins, font-size, line-height) so walkers that stand on text lines and borders reach the exit (inspired by HN "Lemmings CSS Animation", 2026-11-05) | DOM layout as terrain, Range.getClientRects | 5/4/3 on 2026-11-06
+- benford-ledger | game | "Lucky Number" (Unity jam theme Nov 2026): forensic accountant spots fabricated ledgers by first-digit and last-digit statistics, round-number bias and duplicate tests | statistics, data viz | 3/3/5 on 2026-11-06
+- root-funnel | game | run an AI bug-hunting pipeline (cf. OpenAI "A thousand fewer paths to root", 2026-11-04): triage candidates, dedupe variants, beware exploits that root via a different bug | systems sim | 3/2/3 on 2026-11-06
+- chandrasekhar | toy | accrete mass onto a magnetised white dwarf and see whether field pressure lets it pass 1.4 Msun (IISc simulation, 2026-11-05) | physics toy | 3/3/4 on 2026-11-06
 - (reentry-footprint could also cover the Nov 2026 "save Hubble" reboost story: plan a reboost before decay)
 
 ## Interests of the user (use for inspiration, not as a straitjacket)
