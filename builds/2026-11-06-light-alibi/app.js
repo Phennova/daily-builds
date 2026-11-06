@@ -87,7 +87,7 @@
   var W = 1, H = 1, dpr = 1;
   var view = { lat: 25, lon: 10, zoom: 1 };
   var buf = document.createElement('canvas'), bctx = buf.getContext('2d'), img = null;
-  var dirty = true, hiResDue = 0, lowRes = false;
+  var dirty = true, hiResDue = 0, lowRes = false, redraw = true;
   var STARS = []; (function () { var r = LA.rng(7); for (var i = 0; i < 90; i++) STARS.push([r(), r(), r()]); })();
   function resize() {
     dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -309,9 +309,9 @@
     if (dirty) {
       renderGlobe(animating || dragState ? 0.5 : 1);
       lowRes = animating || !!dragState;
-      dirty = false; hiResDue = now + 160;
-    } else if (lowRes && now > hiResDue) { renderGlobe(1); lowRes = false; }
-    draw(now);
+      dirty = false; hiResDue = now + 160; redraw = true;
+    } else if (lowRes && now > hiResDue) { renderGlobe(1); lowRes = false; redraw = true; }
+    if (redraw || G.ripples.length || (G.submitted && !reduced)) { draw(now); redraw = false; }
     requestAnimationFrame(frame);
   }
 
@@ -341,7 +341,7 @@
   cv.addEventListener('pointermove', function (e) {
     var p = rel(e);
     if (!pointers.has(e.pointerId)) {
-      if (e.pointerType === 'mouse') { var h = hitLandmark(p.x, p.y); if (h !== G.hover) { G.hover = h; } cv.style.cursor = h ? 'pointer' : ''; }
+      if (e.pointerType === 'mouse') { var h = hitLandmark(p.x, p.y); if (h !== G.hover) { G.hover = h; redraw = true; } cv.style.cursor = h ? 'pointer' : ''; }
       return;
     }
     pointers.set(e.pointerId, p);
@@ -388,7 +388,7 @@
   var G = { mode: 'campaign', idx: 0, cs: null, disks: [], ripples: [], probed: {}, selfC: null, budget: 0, verdict: null, pin: null, submitted: false, total: 0, history: [], lms: LA.landmarkIds(), hover: null };
   var BASE_SEED = (Date.now() / 1000) | 0;
   function startCase(cs) {
-    G.cs = cs; G.disks = []; G.ripples = []; G.probed = {}; G.selfC = null; G.budget = cs.budget; G.verdict = null; G.pin = null; G.submitted = false;
+    G.cs = cs; G.disks = []; G.ripples = []; G.pending = 0; G.probed = {}; G.selfC = null; G.budget = cs.budget; G.verdict = null; G.pin = null; G.submitted = false;
     G.rnd = LA.rng(cs.seed ^ 0x9e3779b9);
     $('filter').value = '';
     flyTo(cs.claimPlace.lat * 0.8, cs.claimPlace.lon, 1.25, 900);
@@ -405,13 +405,17 @@
     if (G.probed[id]) return;
     if (G.budget <= 0) { sfx.deny(); toast('No probes left. Make your call.'); return; }
     G.budget--;
-    var m = measureFor(id), p = LA.place(id);
+    var m = measureFor(id), p = LA.place(id), csAt = G.cs;
     G.probed[id] = { min: m.min, samples: m.samples, pending: true };
+    G.pending++;
     var disk = LA.diskFor(id, m.min, G.selfC);
     var dur = clamp(m.min * 7, 380, 1700);
     sfx.ping();
     var finish = function () {
+      if (G.cs !== csAt) return;
+      G.pending--;
       G.probed[id].pending = false;
+      disk = LA.diskFor(id, m.min, G.selfC);
       disk.vec = LA.toVec(p.lat, p.lon); disk.shown = disk.radius;
       G.disks.push(disk); dirty = true; sfx.echo();
       var proves = LA.dist(p, G.cs.claimPlace) > disk.radius;
@@ -513,14 +517,19 @@
         (exP.length ? '<span style="color:var(--red)">outside the ' + esc(exP[0].lm.name) + ' disk</span>' : (G.disks.length ? 'inside every disk' : 'no disks yet'));
     }
     $('pinInfo').innerHTML = pi;
-    var pending = G.ripples.length > 0;
-    $('submitBtn').disabled = !(G.verdict && G.pin) || G.submitted || pending;
-    $('submitBtn').textContent = !G.verdict ? 'Choose a verdict' : !G.pin ? 'Place your pin' : 'File report';
+    var pending = G.pending > 0;
+    var sb = $('submitBtn');
+    if (G.submitted) { sb.disabled = false; sb.textContent = G.mode === 'campaign' && G.idx >= LA.CASES.length - 1 ? 'Shift report' : 'Next case'; }
+    else {
+      sb.disabled = !(G.verdict && G.pin) || pending;
+      sb.textContent = !G.verdict ? 'Choose a verdict' : !G.pin ? 'Place your pin' : pending ? 'Waiting for echoes...' : 'File report';
+    }
+    redraw = true;
   }
   $('vImp').onclick = function () { if (G.submitted) return; G.verdict = 'impossible'; sfx.tick(); updateUI(); };
   $('vCant').onclick = function () { if (G.submitted) return; G.verdict = 'cant'; sfx.tick(); updateUI(); };
   $('selfBtn').onclick = function () { ac(); measureSelf(); };
-  $('submitBtn').onclick = function () { submit(); };
+  $('submitBtn').onclick = function () { if (G.submitted) { closeModal(); next(); } else submit(); };
 
   function submit() {
     if (G.submitted || !G.verdict || !G.pin) return;
@@ -552,15 +561,10 @@
     html += '<div class="btns">' + (G.mode === 'night' ? '<button id="endBtn">End shift</button>' : '') + '<button id="lookBtn">Look at the globe</button><button id="nextBtn" class="primary">' + (last ? 'Shift report' : 'Next case') + '</button></div>';
     openModal(html);
     $('nextBtn').onclick = function () { closeModal(); next(); };
-    $('lookBtn').onclick = function () { closeModal(); toast('Tap "Next case" in the panel when you are done looking.'); showNextInPanel(); };
+    $('lookBtn').onclick = function () { closeModal(); toast('Tap "' + $('submitBtn').textContent + '" in the panel when you are done looking.'); };
     if ($('endBtn')) $('endBtn').onclick = function () { closeModal(); summary(); };
   }
-  function showNextInPanel() {
-    var b = $('submitBtn'); b.disabled = false; b.textContent = 'Next case';
-    b.onclick = function () { b.onclick = function () { submit(); }; next(); };
-  }
   function next() {
-    $('submitBtn').onclick = function () { submit(); };
     if (G.mode === 'campaign') {
       if (G.idx >= LA.CASES.length - 1) { summary(); return; }
       G.idx++; startCase(LA.campaignCase(G.idx, BASE_SEED + G.idx * 101));
