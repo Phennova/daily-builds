@@ -35,6 +35,9 @@ you thought of but did not build.
 - benford-ledger | game | "Lucky Number" (Unity jam theme Nov 2026): forensic accountant spots fabricated ledgers by first-digit and last-digit statistics, round-number bias and duplicate tests | statistics, data viz | 3/3/5 on 2026-11-06
 - root-funnel | game | run an AI bug-hunting pipeline (cf. OpenAI "A thousand fewer paths to root", 2026-11-04): triage candidates, dedupe variants, beware exploits that root via a different bug | systems sim | 3/2/3 on 2026-11-06
 - chandrasekhar | toy | accrete mass onto a magnetised white dwarf and see whether field pressure lets it pass 1.4 Msun (IISc simulation, 2026-11-05) | physics toy | 3/3/4 on 2026-11-06
+- coupler | game | four-bar/six-bar linkage synthesis puzzles: drag pivots so the coupler point traces a straight line (Watt, Chebyshev, Peaucellier), passes gates, ends by tuning a Jansen Strandbeest leg that must walk over dunes (cf. Show HN ldraw-mecha, 2026-11-06; plain Jansen simulators already exist, so the puzzle framing is the point) | circle-intersection kinematics, canvas | 3/4/4 on 2026-11-07
+- dont-run-it | game | review a cloned repo before running it and find the credential-stealing traps (postinstall scripts, .vscode tasks autorun, git hooks, typosquats, hidden Unicode) (cf. Show HN CloneGuard, 2026-11-06) | security education, fake file tree | 3/3/4 on 2026-11-07 (security streak; space it)
+- no-shots-fired | game | QRA intercept: shadow an intruding bomber out of an ADIZ with formation geometry and visual signals, never firing (Week Sauce Nov 2026 theme) | flight geometry, canvas | 3/3/3 on 2026-11-07
 - (reentry-footprint could also cover the Nov 2026 "save Hubble" reboost story: plan a reboost before decay)
 
 ## Interests of the user (use for inspiration, not as a straitjacket)
