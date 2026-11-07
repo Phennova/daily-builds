@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1b1d16">
+<title>Crash Box - double-clutch the Red Ball Express</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <div id="sceneWrap">
+    <canvas id="scene" aria-label="Road view"></canvas>
+    <div id="hint" aria-live="polite"></div>
+    <div id="topbar">
+      <span id="runName"></span>
+      <span id="progress"></span>
+      <button id="btnPause" class="icon" aria-label="Pause">II</button>
+      <button id="btnMute" class="icon" aria-label="Mute">&#9835;</button>
+    </div>
+  </div>
+  <div id="console">
+    <div id="left" class="pedals">
+      <button id="pClutch" class="pedal clutch" aria-label="Clutch (Shift)"><b>CLUTCH</b><small>Shift</small></button>
+      <button id="pBrake" class="pedal brake" aria-label="Brake (S)"><b>BRAKE</b><small>S</small></button>
+    </div>
+    <div id="dashWrap"><canvas id="dash" aria-label="Dashboard"></canvas></div>
+    <div id="gateWrap">
+      <canvas id="gate" aria-label="Gear lever: drag into a gate, or hold keys 1-5"></canvas>
+      <button id="btnStart" class="start" aria-label="Start engine (E)">START <small>E</small></button>
+    </div>
+    <div id="right" class="pedals">
+      <button id="pGas" class="pedal gas" aria-label="Throttle (W)"><b>GAS</b><small>W</small><i id="gasFill"></i></button>
+    </div>
+  </div>
+
+  <!-- overlays -->
+  <section id="ovTitle" class="overlay show">
+    <div class="card">
+      <p class="eyebrow">Red Ball Express &middot; France, 1944</p>
+      <h1>CRASH BOX</h1>
+      <p class="lede">Your GMC "Jimmy" has a Warner T93 five-speed with <b>no synchromesh</b>. A gear only goes in when both
+        halves of the dog clutch already spin at the same speed. Double-clutch, match the revs by eye and by ear, and keep
+        the convoy rolling at 25 mph and 60 yards.</p>
+      <div class="row">
+        <button id="btnPlay" class="primary">Drive</button>
+        <button id="btnHow">How to double-clutch</button>
+      </div>
+      <p class="fine">Sound on recommended: the engine is synthesised from its firing pulses. Keyboard: Shift is the clutch.</p>
+    </div>
+  </section>
+
+  <section id="ovHow" class="overlay">
+    <div class="card scroll">
+      <h2>How to double-clutch</h2>
+      <p>The tachometer has a <b class="cw">white needle</b> (engine) and an <b class="ca">amber needle</b> (gearbox input
+        shaft - it parts from the engine when the clutch is down). Around the rim, ticks <b>1-5</b> show the rpm each gear
+        needs at your road speed. A tick turns <b class="cg">green</b> when the input shaft is close enough to mesh.</p>
+      <ol>
+        <li><b>Clutch in</b>, pull the lever to <b>neutral</b>.</li>
+        <li><b>Clutch out</b> (still in neutral): the input shaft now follows the engine.</li>
+        <li>Upshift: let the revs <b>fall</b> to the next gear's tick. Downshift: <b>blip the gas</b> to raise them.</li>
+        <li><b>Clutch in</b>, push the lever into the gear. <b>Clutch out</b>, back on the gas.</li>
+      </ol>
+      <p>Miss and the teeth clash: it grinds, the gearbox wears, and holding the lever there slowly "grinds it in".
+        To pull away from a stop, hold the clutch and wait for the amber needle to stop before selecting 1st.</p>
+      <p>Expert: with the throttle feathered so the gears carry no load, the lever slips out without the clutch, and a gear
+        goes in clutchless if the engine speed matches. Drivers called it <b>floating</b> the gears. You may need it.</p>
+      <h3>Controls</h3>
+      <table class="keys">
+        <tr><td>Clutch</td><td>Shift (hold) / CLUTCH pedal</td></tr>
+        <tr><td>Gas</td><td>W or Up / GAS pedal (higher on the pedal = more)</td></tr>
+        <tr><td>Brake</td><td>S or Down / BRAKE pedal</td></tr>
+        <tr><td>Gear</td><td>hold 1-5, N or 0 for neutral / drag the knob in the gate</td></tr>
+        <tr><td>Start engine</td><td>E / START (in neutral or clutch down)</td></tr>
+        <tr><td>Pause, mute</td><td>P or Esc, M</td></tr>
+      </table>
+      <div class="row"><button id="btnHowBack" class="primary">Got it</button></div>
+    </div>
+  </section>
+
+  <section id="ovRuns" class="overlay">
+    <div class="card scroll">
+      <h2>Runs</h2>
+      <div id="runList"></div>
+      <p id="campaign" class="fine"></p>
+      <div class="row"><button id="btnRunsHow">How to double-clutch</button><button id="btnRunsBack">Title</button></div>
+    </div>
+  </section>
+
+  <section id="ovBrief" class="overlay">
+    <div class="card">
+      <p class="eyebrow" id="briefNum"></p>
+      <h2 id="briefName"></h2>
+      <p id="briefText"></p>
+      <p class="fine" id="briefRules"></p>
+      <div class="row"><button id="btnGo" class="primary">Roll out</button><button id="btnBriefBack">Runs</button></div>
+    </div>
+  </section>
+
+  <section id="ovPause" class="overlay">
+    <div class="card">
+      <h2>Paused</h2>
+      <div class="row col">
+        <button id="btnResume" class="primary">Resume</button>
+        <button id="btnRestart">Restart run</button>
+        <button id="btnQuit">Runs</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="ovResult" class="overlay">
+    <div class="card scroll">
+      <p class="eyebrow" id="resEyebrow">Driver's log</p>
+      <h2 id="resTitle"></h2>
+      <div id="resGrade" class="grade"></div>
+      <table id="resLines" class="log"></table>
+      <p id="resNote" class="fine"></p>
+      <div class="row">
+        <button id="btnNext" class="primary">Next run</button>
+        <button id="btnRetry">Retry</button>
+        <button id="btnResRuns">Runs</button>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="sim.js"></script>
+<script src="audio.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

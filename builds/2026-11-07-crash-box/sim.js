@@ -31,7 +31,7 @@
   };
 
   // Full-throttle gross torque of the GMC 270 straight six (approx. 293 N.m at 1400 rpm).
-  const TORQUE_PTS = [[0, 110], [400, 185], [800, 245], [1400, 293], [2000, 286], [2750, 262], [3200, 214], [3800, 0]];
+  const TORQUE_PTS = [[0, 150], [400, 215], [800, 262], [1400, 293], [2000, 286], [2750, 262], [3200, 214], [3800, 0]];
   function fullTorque(rpm) {
     if (rpm <= 0) return TORQUE_PTS[0][1];
     for (let i = 1; i < TORQUE_PTS.length; i++) {
@@ -146,7 +146,7 @@
   function outputW(s) { return (s.v / TRUCK.r) * TRUCK.axle; }  // gearbox output shaft speed (rad/s)
   function gearInputW(s, g) { return outputW(s) * TRUCK.ratios[g]; } // input speed gear g needs at this road speed
 
-  function idleThrottle(rpm) { return clamp((780 - rpm) / 180 * 0.13, 0, 0.45); }
+  function idleThrottle(rpm) { return clamp((780 - rpm) / 180 * 0.13, 0, 0.5); }
 
   function engineTorque(s, rpm) {
     if (!s.running) return -(friction(rpm) + 20) * clamp(rpm / 40, 0, 1);
@@ -191,7 +191,7 @@
     // actuators: pedal goes down fast, comes up at a rate a driver's foot can feather
     const wantClutch = s.clutchBroken ? 0 : clamp(input.clutch || 0, 0, 1);
     const slow = s.pedal > 0.2 && s.pedal < 0.85;
-    s.pedal = approach(s.pedal, wantClutch, 9, slow ? 1.5 : 4, dt);
+    s.pedal = approach(s.pedal, wantClutch, 9, slow ? 1.1 : 4, dt);
     s.thr = approach(s.thr, clamp(input.throttle || 0, 0, 1), 6, 8, dt);
     s.brake = approach(s.brake, clamp(input.brake || 0, 0, 1), 6, 8, dt);
     if (s.clutchBroken) s.pedal = 0;
@@ -299,7 +299,7 @@
     if (s.overrev) { const d = (rpm - T.overRev) * 0.004 * dt; s.health -= d; s.stats.healthLost += d; }
 
     // brakes heat with the power they absorb, cool with airflow
-    s.brakeTemp += (Fbrake * s.v) * dt / 9000 - (s.brakeTemp - 20) * (0.04 + 0.004 * s.v) * dt;
+    s.brakeTemp += (Fbrake * s.v) * dt / 2400 - (s.brakeTemp - 20) * (0.02 + 0.002 * s.v) * dt;
 
     s.x += s.v * dt;
 
