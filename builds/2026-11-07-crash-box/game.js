@@ -5,6 +5,8 @@
   const $ = (id) => document.getElementById(id);
   const params = new URLSearchParams(location.search);
   const DEMO = params.has('demo');
+  const PLAYTEST = params.has('playtest');
+  const pbot = PLAYTEST ? S.createBot() : null;
   const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
   const W2RPM = S.W2RPM;
@@ -148,11 +150,23 @@
     return null;
   }
 
+  // brake ramps up while held (so a held key/finger is progressive, not on/off)
+  let brakeLvl = 0, gasLvl = 0;
+  // keyboard gas also ramps (~0.8 s to full) so W can feather the engine; touch gas is already analog
+  function gasRamp() {
+    gasLvl = keys.gas ? Math.min(1, gasLvl + DT * 1.3 + (gasLvl < 0.15 ? DT * 3 : 0)) : Math.max(0, gasLvl - DT * 4);
+    return gasLvl;
+  }
+  function brakeRamp() {
+    const on = keys.brake || touch.brake;
+    brakeLvl = on ? Math.min(1, brakeLvl + DT * 2.2 + (brakeLvl < 0.2 ? DT * 2 : 0)) : Math.max(0, brakeLvl - DT * 5);
+    return brakeLvl;
+  }
   function playerInput() {
     return {
       clutch: keys.clutch || touch.clutch ? 1 : 0,
-      throttle: Math.max(keys.gas ? 1 : 0, touch.gas),
-      brake: keys.brake || touch.brake ? 1 : 0,
+      throttle: Math.max(gasRamp(), touch.gas),
+      brake: brakeRamp(),
       lever: leverRequest(),
       start: startPressed,
     };
@@ -685,6 +699,11 @@
       acc += dt;
       while (acc >= DT) {
         acc -= DT;
+        if (PLAYTEST) {   // drive the REAL player-input path (binary pedals) with the bot's decisions
+          const bi = S.botInput(pbot, sim, DT);
+          keys.clutch = bi.clutch > 0.5; touch.gas = bi.throttle; touch.brake = bi.brake > 0.3;
+          keyReq = bi.lever; startPressed = !!bi.start;
+        }
         const inp = bot ? S.botInput(bot, sim, DT) : playerInput();
         // remember which gear the player is aiming for (for the coach)
         if (inp.lever > 0) sim._wantGear = inp.lever;
@@ -837,6 +856,27 @@
     const pre = document.createElement('pre'); pre.id = 'selftest'; pre.textContent = out.join('\n');
     pre.style.cssText = 'position:fixed;left:8px;top:48px;z-index:20;background:#000c;padding:8px;margin:0;font-size:12px';
     document.body.appendChild(pre);
+  }
+  if (PLAYTEST) {
+    const log = []; const idx = clamp(parseInt(params.get('playtest'), 10) || 1, 1, 5) - 1;
+    const click = (id) => { const el = $(id); if (!el) { log.push('MISSING ' + id); return; } el.click(); };
+    click('btnPlay'); log.push('runs overlay: ' + $('runList').children.length + ' entries');
+    openBrief(idx); log.push('brief: ' + $('briefName').textContent); click('btnGo');
+    log.push('mode after Go: ' + mode);
+    const poll = setInterval(() => {
+      if (mode === 'result') {
+        clearInterval(poll);
+        log.push('RESULT: ' + $('resTitle').textContent + ' / ' + $('resGrade').textContent + ' / ' + $('resLines').textContent);
+        const pre = document.createElement('pre'); pre.id = 'playtest'; pre.textContent = log.join(' ;; '); document.body.appendChild(pre);
+        console.log('[playtest] ' + log.join(' ;; '));
+      }
+    }, 200);
+  }
+  if (params.has('layout')) {
+    const ids = ['sceneWrap','topbar','console','pClutch','pBrake','dashWrap','gateWrap','btnStart','pGas'];
+    const rows = ids.map(id => { const r = $(id).getBoundingClientRect(); return `${id}: x${Math.round(r.left)} y${Math.round(r.top)} w${Math.round(r.width)} h${Math.round(r.height)}`; });
+    rows.push(`viewport ${innerWidth}x${innerHeight} scrollW ${document.documentElement.scrollWidth} scrollH ${document.documentElement.scrollHeight}`);
+    const pre = document.createElement('pre'); pre.id = 'layout'; pre.textContent = rows.join(' | '); pre.style.display = 'none'; document.body.appendChild(pre);
   }
   schedule();
 })();

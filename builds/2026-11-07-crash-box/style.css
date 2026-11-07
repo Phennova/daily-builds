@@ -53,7 +53,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
     grid-template-areas: "dash dash dash" "left gate right"; height: 330px; }
 }
 @media (max-height: 500px) and (orientation: landscape) {
-  #console { height: 170px; grid-template-columns: 1fr 1.7fr 1.2fr 0.7fr; grid-template-rows: 1fr;
+  #console { height: 150px; grid-template-columns: 1fr 1.7fr 1.2fr 0.7fr; grid-template-rows: 1fr;
     grid-template-areas: "left dash gate right"; }
   #sceneWrap { min-height: 120px; }
 }

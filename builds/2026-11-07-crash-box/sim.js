@@ -95,23 +95,23 @@
       brief: 'Learn the crash box. Pull away in 1st and double-clutch up through 2nd into 3rd before the gate.',
     },
     {
-      id: 'n12', name: 'Route N12', len: 2200, tol: 160, lead: true, night: false,
-      segments: [[260, 0], [200, 2], [260, 0], [260, 4.5], [220, -3], [380, 0.5], [240, 3], [380, -1]],
+      id: 'n12', name: 'Route N12', len: 1760, tol: 160, lead: true, night: false,
+      segments: [[260, 0], [200, 2], [260, 4.5], [220, -3], [380, 0.5], [240, 3], [200, -1]],
       brief: 'Join the convoy. Up into 4th, hold 60 yards behind the truck ahead, 25 mph max. Downshift for the rise.',
     },
     {
-      id: 'grade', name: 'The Long Grade', len: 2400, tol: 140, lead: true, night: false, brakes: true,
-      segments: [[260, 0], [180, 3], [380, 7], [300, 9], [160, 1.5], [160, -2], [420, -7], [320, -3], [220, 0]],
+      id: 'grade', name: 'The Long Grade', len: 1940, tol: 140, lead: true, night: false, brakes: true,
+      segments: [[120, 0], [180, 3], [380, 7], [300, 9], [160, -2], [420, -7], [160, -3], [220, 0]],
       brief: 'A steep climb: 4-3-2 on the way up. Then down the far side in a low gear - ride the brakes and they fade.',
     },
     {
-      id: 'blackout', name: 'Blackout Run', len: 2400, tol: 140, lead: true, night: true,
-      segments: [[240, 0], [260, 2.5], [220, 5], [240, -2], [300, 0], [260, 4], [200, 6], [260, -4], [420, 0]],
+      id: 'blackout', name: 'Blackout Run', len: 1980, tol: 140, lead: true, night: true,
+      segments: [[240, 0], [260, 2.5], [220, 5], [240, -2], [100, 0], [260, 4], [200, 6], [260, -4], [200, 0]],
       brief: 'Night. Blackout lights only - the dash is dark. Shift by ear: listen for the revs to meet the gear.',
     },
     {
-      id: 'linkage', name: 'Snapped Linkage', len: 2300, tol: 150, lead: true, night: false, breakAt: 170,
-      segments: [[300, 0], [260, 1.5], [240, 4], [300, -1.5], [300, 0], [260, 3.5], [240, -3], [400, 0]],
+      id: 'linkage', name: 'Snapped Linkage', len: 1750, tol: 150, lead: true, night: false, breakAt: 170,
+      segments: [[150, 0], [260, 1.5], [240, 4], [300, -1.5], [100, 0], [260, 3.5], [240, -3], [200, 0]],
       brief: 'Something in the clutch linkage sounds wrong. If it goes, keep rolling: float the gears with no clutch.',
     },
   ];
