@@ -264,13 +264,17 @@
       let n = 0;
       while (acc >= 1 && n < 12) {
         acc -= 1; n++;
-        while (demoQueue.length && demoQueue[0].t <= sim.t) { const q = demoQueue.shift(); pick(q.r, q.d, q.o, true); }
-        sim.step(); handleEvents(); stepParts();
-        if (sim.finished()) { finish(); break; }
+        stepOnce();
+        if (ended) break;
       }
       if (n) updateHud();
     } else if (parts.length) stepParts();
     render();
+  }
+  function stepOnce() {
+    while (demoQueue.length && demoQueue[0].t <= sim.t) { const q = demoQueue.shift(); pick(q.r, q.d, q.o, true); }
+    sim.step(); handleEvents(); stepParts();
+    if (sim.finished()) finish();
   }
 
   function finish() {
@@ -384,6 +388,39 @@ ${win ? '' : `<p class="dim">Hint: ${esc(L.hint)}</p>`}
   addEventListener('resize', fit);
   document.addEventListener('visibilitychange', () => { if (document.hidden && running && !paused && !titleDemo && !ended) { paused = true; syncButtons(); } });
 
+  // ---------- autotest (?autotest): plays every level through the real buttons ----------
+  function autotest() {
+    const out = document.createElement('pre'); out.id = 'at'; out.style.cssText = 'position:fixed;left:0;top:0;z-index:99;background:#fff;color:#000;font:10px monospace;margin:0;max-width:100%;white-space:pre-wrap';
+    document.body.appendChild(out);
+    const log = s => { out.textContent += s + '\n'; };
+    const click = sel => { const e = document.querySelector(sel); if (!e || e.disabled) { log('FAIL missing/disabled ' + sel); return false; } e.click(); return true; };
+    let idx = 0, q = null, phase = 'menu', wait = 0;
+    const bad = qs.get('autotest') === 'bad'; // 'bad' = do nothing, expect fail screens
+    setTimeout(function tick() {
+      if (phase === 'menu') {
+        if (idx >= LV.length) { log('DONE stars=' + JSON.stringify(stars) + ' ls=' + (localStorage.getItem('reflow.stars') || 'none')); return; }
+        titleDemo = false; $('bMenu').click();
+        if (!click('#card button[data-a=intro][data-i="' + idx + '"]')) { log('L' + (idx + 1) + ' locked'); return; }
+        click('#card button[data-a=start]'); fast = true; syncButtons();
+        q = L.solution.slice().sort((a, b) => a.t - b.t); phase = 'play'; wait = 0;
+      } else if (phase === 'play') {
+        for (let k = 0; k < 120 && !ended; k++) {
+          while (!bad && q.length && q[0].t <= sim.t) {
+            const s = q.shift(); const b = document.querySelector('#rules .opt[data-r="' + s.r + '"][data-d="' + s.d + '"][data-o="' + s.o + '"]');
+            if (!b || (b.disabled && !b.classList.contains('on'))) log('L' + (idx + 1) + ' button unavailable ' + JSON.stringify(s)); else b.click();
+          }
+          stepOnce();
+        }
+        if (ended && $('overlay').classList.contains('show') && $('card').textContent.length > 20 && /Saved/.test($('card').textContent)) {
+          log('L' + (idx + 1) + ' ' + L.id + ': ' + $('card').querySelector('h2').textContent + ' | ' + $('card').textContent.match(/Saved.*?(par \d+)/)[0].replace(/\s+/g, ' ') + ' | ' + ($('card').querySelector('.big') ? $('card').querySelector('.big').textContent : ''));
+          idx++; phase = 'menu';
+        }
+      }
+      if (qs.has('dbg')) { const r = id => { const b = $(id).getBoundingClientRect(); return id + ':' + [b.left, b.top, b.width, b.height].map(Math.round).join(','); }; out.dataset.dbg = innerWidth + 'x' + innerHeight + ' ' + ['stageWrap', 'stage', 'side', 'pane', 'controls', 'hud', 'card'].map(r).join(' ') + ' sw=' + document.documentElement.scrollWidth; }
+      setTimeout(tick, 50);
+    }, 800);
+  }
+
   // ---------- boot ----------
   ReflowFont.load('Reflow Pixel').then(ok => {
     if (!ok) toast('Pixel font failed to load: layouts may differ on this browser.');
@@ -400,5 +437,6 @@ ${win ? '' : `<p class="dim">Hint: ${esc(L.hint)}</p>`}
       if (qs.has('inspect')) { inspect = true; syncButtons(); }
     } else titleScreen();
     last = performance.now(); schedule();
+    if (qs.has('autotest')) autotest();
   });
 })();

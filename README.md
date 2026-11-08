@@ -17,6 +17,7 @@ screenshot.
 | 6 | 2026-11-05 | [Pregroove](builds/2026-11-05-pregroove/) | Game (disc forensics, spiral geometry, CTF) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-05-pregroove/) |
 | 7 | 2026-11-06 | [Light Alibi](builds/2026-11-06-light-alibi/) | Game (network forensics, speed-of-light geolocation) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-06-light-alibi/) |
 | 8 | 2026-11-07 | [Crash Box](builds/2026-11-07-crash-box/) | Game (drivetrain simulation, double-clutching, procedural engine audio) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-07-crash-box/) |
+| 9 | 2026-11-08 | [Reflow](builds/2026-11-08-reflow/) | Game (Lemmings on a live HTML page, CSS as the tool) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-08-reflow/) |
 
 ## Rules of the house
 - Nothing basic: each build needs a distinctive idea, not a clone with a coat of paint.
