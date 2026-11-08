@@ -39,6 +39,8 @@ you thought of but did not build.
 - coupler | game | four-bar/six-bar linkage synthesis puzzles: drag pivots so the coupler point traces a straight line (Watt, Chebyshev, Peaucellier), passes gates, ends by tuning a Jansen Strandbeest leg that must walk over dunes (cf. Show HN ldraw-mecha, 2026-11-06; plain Jansen simulators already exist, so the puzzle framing is the point) | circle-intersection kinematics, canvas | 3/4/4 on 2026-11-07
 - dont-run-it | game | review a cloned repo before running it and find the credential-stealing traps (postinstall scripts, .vscode tasks autorun, git hooks, typosquats, hidden Unicode) (cf. Show HN CloneGuard, 2026-11-06) | security education, fake file tree | 3/3/4 on 2026-11-07 (security streak; space it)
 - no-shots-fired | game | QRA intercept: shadow an intruding bomber out of an ADIZ with formation geometry and visual signals, never firing (Week Sauce Nov 2026 theme) | flight geometry, canvas | 3/3/3 on 2026-11-07
+- cold-chain | game | night-shift refrigeration tech for a supermarket chain: attackers force defrost cycles through exposed controllers (Danfoss/Dixell CVEs, cf. Show HN Coldframe, 2026-11-07); thermal sim of cases, HACCP time-at-temperature, tell faults from intrusions in the logs | thermal sim, security education | 3/3/4 on 2026-11-08 (security streak; space it)
+- lost-footage | game | Spooky Jam "Lost Footage" theme: repair a corrupted found-footage clip by re-linking broken I/P-frame chains and motion vectors (datamosh in reverse) to see what the camera saw | canvas video codec toy | 3/4/3 on 2026-11-08
 - (reentry-footprint could also cover the Nov 2026 "save Hubble" reboost story: plan a reboost before decay)
 
 ## Interests of the user (use for inspiration, not as a straitjacket)
