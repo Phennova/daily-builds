@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reflow self-test</title><link rel="stylesheet" href="page.css">
+<style>body{font:12px/1.3 monospace;margin:8px;background:#fff}#page{position:absolute;left:0;top:0;visibility:visible}#out{margin-left:380px;white-space:pre}</style>
+</head><body>
+<div id="page"></div><style id="lvl"></style>
+<pre id="out">running</pre>
+<script src="font.js"></script><script src="engine.js"></script><script src="levels.js"></script>
+<script>
+(async function () {
+  const E = Engine, out = [], page = document.getElementById('page'), st = document.getElementById('lvl');
+  const qs = new URLSearchParams(location.search);
+  const fontOK = await ReflowFont.load('Reflow Pixel');
+  const probe = document.createElement('span'); probe.style.cssText = "font:20px 'Reflow Pixel';position:absolute;top:-99px"; probe.textContent = 'MMMMMiiiii'; document.body.appendChild(probe);
+  const w10 = probe.getBoundingClientRect().width;
+  out.push('font loaded=' + fontOK + ' width(10ch@20px)=' + w10 + (w10 === 120 ? ' PASS' : ' FAIL'));
+  let fails = 0;
+  function load(L, choice) { page.innerHTML = L.html; st.textContent = E.levelCSS(L, choice); }
+  function run(L, edits) {
+    const choice = E.initialChoice(L);
+    load(L, choice);
+    const sim = new E.Sim(L, () => E.measure(page));
+    const ev = (edits || []).slice().sort((a, b) => a.t - b.t); let k = 0;
+    const trace = [];
+    while (!sim.finished()) {
+      let changed = false;
+      while (k < ev.length && ev[k].t <= sim.t) { choice[ev[k].r][ev[k].d] = ev[k].o; k++; changed = true; }
+      if (changed) { st.textContent = E.levelCSS(L, choice); sim.relayout(); }
+      sim.step();
+      const w0 = sim.walkers[0]; if (w0 && sim.t % 8 === 0 && (w0.state === 'walk' || w0.state === 'fall')) trace.push([w0.x, w0.y]);
+    }
+    return { saved: sim.saved, splat: sim.splat, lost: sim.lost, stuck: sim.active(), t: sim.t, sim, trace };
+  }
+  function ascii(L, choice, trace, sim) {
+    load(L, choice); const m = E.measure(page);
+    const C = 60, R = 54, g = Array.from({ length: R }, () => Array(C).fill(' '));
+    const put = (x, y, ch) => { const c = Math.floor(x / 6), r = Math.floor(y / 10); if (c >= 0 && c < C && r >= 0 && r < R) g[r][c] = ch; };
+    for (const s of m.solids) for (let y = s.t; y < s.b; y += 10) for (let x = s.l; x < s.r; x += 6) put(x + 1, y + 1, s.kind === 'box' ? '+' : '#');
+    if (m.exit) for (let x = m.exit.l; x < m.exit.r; x += 6) put(x + 1, m.exit.t + 1, 'E');
+    for (const p of trace || []) put(p[0], p[1] - 1, '.');
+    put(L.hatch.x, L.hatch.y, 'H');
+    return g.map((r, i) => String(i * 10).padStart(3) + '|' + r.join('') + '|').join('\n');
+  }
+  function combos(L) {
+    const dims = []; L.rules.forEach((r, i) => r.decls.forEach((d, j) => dims.push([i, j, d.opts.length])));
+    const res = []; const cur = dims.map(() => 0);
+    const total = dims.reduce((a, d) => a * d[2], 1); if (total > 64) return [];
+    for (let n = 0; n < total; n++) {
+      let x = n; const edits = []; const label = [];
+      dims.forEach((d, q) => { const o = x % d[2]; x = Math.floor(x / d[2]); edits.push({ t: 0, r: d[0], d: d[1], o }); label.push(L.rules[d[0]].decls[d[1]].opts[o]); });
+      const r = run(L, edits); res.push(label.join('/') + ' -> saved ' + r.saved + '/' + L.count + ' (splat ' + r.splat + ', lost ' + r.lost + ', stuck ' + r.stuck + ')' + (r.saved >= L.need ? ' WIN' : ''));
+    }
+    return res;
+  }
+  const only = qs.get('level');
+  if (qs.has('search')) {
+    const L = LEVELS[+qs.get('search')]; const e0 = L.solution[0]; let best = [];
+    for (let t = 0; t <= 3000; t += 10) { const r = run(L, [{ t, r: e0.r, d: e0.d, o: e0.o }]); best.push([r.saved, t]); }
+    best.sort((a, b) => b[0] - a[0] || a[1] - b[1]);
+    out.push('search ' + L.id + ': ' + best.slice(0, 12).map(b => 't=' + b[1] + ':' + b[0]).join(' '));
+    const wins = best.filter(b => b[0] >= L.need).map(b => b[1]).sort((a, b) => a - b);
+    out.push('winning t values (' + wins.length + '): ' + wins.join(','));
+  }
+  LEVELS.forEach((L, i) => {
+    if (only != null && only !== String(i)) return;
+    out.push('\n== L' + (i + 1) + ' ' + L.id + ' (need ' + L.need + '/' + L.count + ')');
+    const base = run(L, []);
+    const sol = run(L, L.solution);
+    const baseOK = base.saved < L.need, solOK = sol.saved >= L.need;
+    if (!baseOK || !solOK) fails++;
+    out.push('no edits: saved ' + base.saved + (baseOK ? ' PASS(fails as intended)' : ' FAIL(solved without edits)'));
+    out.push('solution: saved ' + sol.saved + ' splat ' + sol.splat + ' lost ' + sol.lost + ' stuck ' + sol.stuck + ' t=' + sol.t + (solOK ? ' PASS' : ' FAIL'));
+    if (qs.has('combos')) out.push(...combos(L));
+    if (qs.has('ascii')) {
+      const ch = E.initialChoice(L); out.push('initial layout + first reader trace (no edits):'); out.push(ascii(L, ch, base.trace));
+      const ch2 = E.initialChoice(L); L.solution.forEach(e => ch2[e.r][e.d] = e.o); out.push('solution layout + trace:'); out.push(ascii(L, ch2, sol.trace));
+    }
+  });
+  out.push('\nRESULT: ' + (fails === 0 && w10 === 120 ? 'ALL PASS' : fails + ' FAIL'));
+  document.getElementById('out').textContent = out.join('\n');
+  document.title = fails === 0 ? 'PASS' : 'FAIL';
+})().catch(e => { document.getElementById('out').textContent = 'ERROR ' + e.stack; });
+</script></body></html>
