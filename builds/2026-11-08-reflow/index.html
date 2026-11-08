@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1e1f24">
+<title>Reflow - Lemmings on a real web page</title>
+<meta name="description" content="A puzzle game where the level is a real HTML page and your only tools are CSS declarations.">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="page.css">
+</head>
+<body>
+<div id="app">
+  <header id="hud">
+    <button id="bMenu" class="icon" aria-label="Levels" title="Levels (Esc)">&#9776;</button>
+    <div id="lvlName">Reflow</div>
+    <div class="stat"><span class="k">saved</span> <b id="sSaved">0/0</b></div>
+    <div class="stat"><span class="k">edits</span> <b id="sEdits">0</b></div>
+    <div class="stat hide-s"><span class="k">time</span> <b id="sTime">0</b></div>
+  </header>
+  <main id="stageWrap">
+    <div id="stage">
+      <div id="chrome"><span class="dots"><i></i><i></i><i></i></span><span id="url">reflow.example</span></div>
+      <div id="page"></div>
+      <canvas id="fx" aria-hidden="true"></canvas>
+    </div>
+  </main>
+  <section id="side">
+    <div id="pane" aria-label="Styles pane">
+      <div class="paneHead"><span class="tab on">Styles</span><span class="tab dim">Computed</span><span class="tab dim">Layout</span><span id="editsLeft"></span></div>
+      <div id="rules"></div>
+      <div id="teach"></div>
+    </div>
+    <div id="controls">
+      <button id="bPlay" title="Pause / play (Space)">&#10073;&#10073;</button>
+      <button id="bFast" title="Fast forward (F)">&#9193;</button>
+      <button id="bRestart" title="Restart (R)">&#8635;</button>
+      <button id="bInspect" title="Show line boxes (I)">boxes</button>
+      <button id="bHint" title="Hint (H)">hint</button>
+      <button id="bMute" title="Mute (M)">&#9835;</button>
+    </div>
+  </section>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="overlay" class="show">
+    <div id="card"></div>
+  </div>
+</div>
+<style id="lvl"></style>
+<script src="font.js"></script>
+<script src="engine.js"></script>
+<script src="levels.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

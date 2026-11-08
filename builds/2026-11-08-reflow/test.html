@@ -54,8 +54,8 @@
   }
   const only = qs.get('level');
   if (qs.has('search')) {
-    const L = LEVELS[+qs.get('search')]; const e0 = L.solution[0]; let best = [];
-    for (let t = 0; t <= 3000; t += 10) { const r = run(L, [{ t, r: e0.r, d: e0.d, o: e0.o }]); best.push([r.saved, t]); }
+    const L = LEVELS[+qs.get('search')]; const e0 = L.solution[L.solution.length - 1]; const pre = L.solution.slice(0, -1); let best = [];
+    for (let t = 0; t <= 3000; t += 10) { const r = run(L, pre.concat([{ t, r: e0.r, d: e0.d, o: e0.o }])); best.push([r.saved, t]); }
     best.sort((a, b) => b[0] - a[0] || a[1] - b[1]);
     out.push('search ' + L.id + ': ' + best.slice(0, 12).map(b => 't=' + b[1] + ':' + b[0]).join(' '));
     const wins = best.filter(b => b[0] >= L.need).map(b => b[1]).sort((a, b) => a - b);

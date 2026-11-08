@@ -86,28 +86,30 @@ window.LEVELS = [
 .tower{position:absolute;left:240px;top:252px;width:120px;height:288px;background:#d9d2c3}
 .roof{position:absolute;left:300px;top:232px;line-height:20px}`,
     rules: [{ sel: '.lift', decls: [{ p: 'font-size', opts: ['20px', '24px', '30px'], v: 0 }] }],
-    solution: [{ t: 700, r: 0, d: 0, o: 1 }]
+    solution: [{ t: 500, r: 0, d: 0, o: 1 }]
   },
   {
     id: 'ship', title: 'Ship It', url: 'launch.example/',
-    teach: 'Everything at once: alignment, the em lift and a line that will not wrap.',
-    hint: 'Stairs first, then catch the crowd on the lift, then give them a long way home.',
-    hatch: { x: 30, y: 20, dir: 1 }, count: 10, need: 7, edits: 5, par: 3, time: 4800, interval: 25,
-    html: `<h1 class="t">Ship it.</h1>
-<p class="steps">one more page<br>to ship tonight<br>and readers lost</p>
-<div class="pillar solid"></div><div class="lift solid"><span class="nosolid">LIFT</span></div><div class="tower solid"></div>
-<p class="sign">go <a class="exit">home</a></p>`,
-    css: `.t{position:absolute;left:10px;top:40px;font-size:30px;line-height:30px}
-.steps{position:absolute;left:10px;top:90px;width:220px;line-height:30px}
-.pillar{position:absolute;left:180px;top:200px;width:20px;height:340px;background:#d9d2c3}
-.lift{position:absolute;left:200px;bottom:0;width:80px;height:15em;font-size:20px;line-height:20px;background:#c9d8e8;text-align:center}
-.tower{position:absolute;left:280px;top:180px;width:20px;height:360px;background:#d9d2c3}
-.sign{position:absolute;left:280px;bottom:360px;width:40px;line-height:20px}`,
+    teach: 'Everything at once: a banner in the way, a line that has to stay on one line, and the em lift.',
+    hint: 'Clear the road, build the bridge, then catch the crowd on the lift before you grow it.',
+    hatch: { x: 20, y: 280, dir: 1 }, count: 10, need: 7, edits: 5, par: 3, time: 4800, interval: 25,
+    html: `<h1 class="t nosolid">Ship it.</h1><p class="sub nosolid">launch night, 3 a.m.</p>
+<p class="road">walk <span class="cookie solid">Cookies? ACCEPT ALL to continue</span>on</p>
+<p class="bridge">over gap</p>
+<div class="lift solid"><span class="nosolid">LIFT</span></div><div class="tower solid"></div><p class="roof"><a class="exit">up</a></p>`,
+    css: `.t{position:absolute;left:20px;top:40px;font-size:40px;line-height:40px}
+.sub{position:absolute;left:20px;top:90px;font-size:10px;line-height:10px;color:#888}
+.road{position:absolute;left:0;top:300px;line-height:20px;white-space:nowrap}
+.cookie{display:inline-block;width:80px;height:70px;vertical-align:bottom;background:#f4e3b5;font-size:10px;line-height:12px;white-space:normal;padding:6px;color:#6b5320}
+.bridge{position:absolute;left:80px;top:300px;width:60px;line-height:20px}
+.lift{position:absolute;left:176px;bottom:0;width:124px;height:12em;font-size:20px;line-height:20px;background:#c9d8e8;text-align:center}
+.tower{position:absolute;left:300px;top:252px;width:60px;height:288px;background:#d9d2c3}
+.roof{position:absolute;left:318px;top:232px;line-height:20px}`,
     rules: [
-      { sel: '.steps', decls: [{ p: 'text-align', opts: ['right', 'center', 'left'], v: 0 }] },
-      { sel: '.lift', decls: [{ p: 'font-size', opts: ['20px', '24px', '30px'], v: 0 }] },
-      { sel: '.sign', decls: [{ p: 'white-space', opts: ['normal', 'nowrap'], v: 0 }] }
+      { sel: '.cookie', decls: [{ p: 'display', opts: ['inline-block', 'none'], v: 0 }, { p: 'visibility', opts: ['visible', 'hidden'], v: 0 }] },
+      { sel: '.bridge', decls: [{ p: 'white-space', opts: ['normal', 'nowrap'], v: 0 }] },
+      { sel: '.lift', decls: [{ p: 'font-size', opts: ['20px', '24px', '30px'], v: 0 }] }
     ],
-    solution: [{ t: 0, r: 0, d: 0, o: 2 }, { t: 0, r: 2, d: 0, o: 1 }, { t: 900, r: 1, d: 0, o: 1 }]
+    solution: [{ t: 0, r: 0, d: 0, o: 1 }, { t: 0, r: 1, d: 0, o: 1 }, { t: 630, r: 2, d: 0, o: 1 }]
   }
 ];
