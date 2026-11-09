@@ -41,6 +41,10 @@ you thought of but did not build.
 - no-shots-fired | game | QRA intercept: shadow an intruding bomber out of an ADIZ with formation geometry and visual signals, never firing (Week Sauce Nov 2026 theme) | flight geometry, canvas | 3/3/3 on 2026-11-07
 - cold-chain | game | night-shift refrigeration tech for a supermarket chain: attackers force defrost cycles through exposed controllers (Danfoss/Dixell CVEs, cf. Show HN Coldframe, 2026-11-07); thermal sim of cases, HACCP time-at-temperature, tell faults from intrusions in the logs | thermal sim, security education | 3/3/4 on 2026-11-08 (security streak; space it)
 - lost-footage | game | Spooky Jam "Lost Footage" theme: repair a corrupted found-footage clip by re-linking broken I/P-frame chains and motion vectors (datamosh in reverse) to see what the camera saw | canvas video codec toy | 3/4/3 on 2026-11-08
+- hoot | game | program a 1951 mercury-delay-line computer (CSIRAC / Ferranti Mark 1) to play a tune: no notes, only pulse timing; loop length and word positions in the delay line set the pitch, tune Colonel Bogey within cents (cf. HN "How Australia played the first music on a computer", 2026-11-09) | toy ISA, sample-accurate pulse audio, periodicity pitch | 5/3/3 on 2026-11-09 (strong; do soon)
+- malloc-arena | game | be the heap allocator: place blocks from a request stream, split/coalesce free lists, fight fragmentation (cf. HN "What is malloc doing, anyway?", 2026-11-09) | systems sim | 3/2/4 on 2026-11-09
+- paper-dart | toy | fold a paper airplane on a crease grid and glide-test it (CG, dihedral, elevator trim) (cf. HN foldableflight, 2026-11-09) | folding geometry, glide physics | 3/4/2 on 2026-11-09
+- glyph-xray | tool | paste any text and reveal hidden Unicode: tag-character ASCII smuggling (LLM prompt injection), bidi Trojan Source, zero-width marks, mixed-script homoglyphs; decode/encode payloads | Unicode analysis, security education | 3/3/5 on 2026-11-09 (tool; security - space it)
 - (reentry-footprint could also cover the Nov 2026 "save Hubble" reboost story: plan a reboost before decay)
 
 ## Interests of the user (use for inspiration, not as a straitjacket)
