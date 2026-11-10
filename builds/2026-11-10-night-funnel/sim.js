@@ -56,7 +56,7 @@
   function makeJet(pos, hdg, speed) {
     const f = [Math.sin(hdg), Math.cos(hdg), 0];
     return {
-      pos: pos.slice(), vel: mul(f, speed), f, u: [0, 0, 1], n: 1, nCmd: 1, thr: 0.6, brake: false,
+      pos: pos.slice(), vel: mul(f, speed), f, u: [0, 0, 1], n: 1, nCmd: 1, g: 1, speed, stall: false, thr: 0.6, brake: false,
       damage: 0, fuel: 1000, dead: false, deadWhy: '', aoaWarn: false
     };
   }
@@ -262,7 +262,7 @@
       coach: [
         'Follow the box. Throttle back: the drone flies at 185 km/h, you stall near 210.',
         'The curved green line is the funnel: where your last 1.5 s of bullets are right now.',
-        'The small ring on the funnel is your bullets at the drone's range. Put the drone in the ring.',
+        'The small ring on the funnel is your bullets at the drone\'s range. Put the drone in the ring.',
         'Up close, the funnel walls are exactly its wingspan apart where it sits: wingtips on the walls.',
         'IN RANGE at 150-700 m. Short bursts. Stay beyond 150 m when it blows.'
       ],

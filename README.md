@@ -18,6 +18,7 @@ screenshot.
 | 7 | 2026-11-06 | [Light Alibi](builds/2026-11-06-light-alibi/) | Game (network forensics, speed-of-light geolocation) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-06-light-alibi/) |
 | 8 | 2026-11-07 | [Crash Box](builds/2026-11-07-crash-box/) | Game (drivetrain simulation, double-clutching, procedural engine audio) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-07-crash-box/) |
 | 9 | 2026-11-08 | [Reflow](builds/2026-11-08-reflow/) | Game (Lemmings on a live HTML page, CSS as the tool) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-08-reflow/) |
+| 11 | 2026-11-10 | [Night Funnel](builds/2026-11-10-night-funnel/) | Game (night drone interception, honest EEGS gun funnel from flight history) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-10-night-funnel/) |
 
 ## Rules of the house
 - Nothing basic: each build needs a distinctive idea, not a clone with a coat of paint.
