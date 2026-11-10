@@ -66,6 +66,16 @@ const turnPts = funnelCheck(5 / 8, '6 g turn');
   ok(Math.abs(k.pos[2] - 1000) < 60, `neutral stick holds ~1 g level flight (alt ${k.pos[2].toFixed(0)} m after 10 s, V ${k.speed.toFixed(0)})`);
 }
 
+// 3b. human "hold" mode: banked 40 degrees, neutral stick keeps the vertical speed near zero (no spiral dive)
+{
+  const j = NF.makeJet([0, 0, 1500], 0, 150);
+  for (let i = 0; i < 21; i++) NF.stepJet(j, { roll: 1, pull: 0, thr: 0.7, brake: false, hold: true }, NF.DT);
+  const bank = Math.acos(j.u[2]) * 180 / Math.PI;
+  const z0 = j.pos[2];
+  for (let i = 0; i < 480; i++) NF.stepJet(j, { roll: 0, pull: 0, thr: 0.7, brake: false, hold: true }, NF.DT);
+  ok(Math.abs(j.pos[2] - z0) < 120 && bank > 20, `banked ${bank.toFixed(0)} deg with neutral stick: altitude change ${(j.pos[2] - z0).toFixed(0)} m in 4 s (hold mode)`);
+}
+
 // 4. an unopposed drone flies its route and darkens its district
 {
   const w = NF.newWorld(0);

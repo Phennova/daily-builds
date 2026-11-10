@@ -293,7 +293,7 @@
       }))
     },
     {
-      id: 5, name: 'The Record', sub: 'Ten drones on three axes. 510 rounds, one tank of fuel. Beat nine.', nvg: true, fuel: 700, pass: 6, record: 9,
+      id: 5, name: 'The Record', sub: 'Ten drones on three axes. 510 rounds, one tank of fuel. Beat nine.', nvg: true, fuel: 700, pass: 4, record: 9,
       player: { x: 0, y: 9000, alt: 800, hdg: Math.PI, speed: 150 },
       drones: (function () {
         const out = [];
