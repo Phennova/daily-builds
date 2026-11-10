@@ -1,17 +1,23 @@
 # Night Funnel - design
 
-Build #10, 2026-11-09. Game (air-to-air gunnery, flight physics, night air defence).
+Build #11, 2026-11-10. Game (air-to-air gunnery, flight physics, night air defence).
+
+(Designed on 2026-11-09 for build #10, whose worker chunk hung before any code was written; re-selected on
+2026-11-10 after fresh research - see "Ideation 2026-11-10" at the end - and moved to this folder.)
 
 ## Concept
-At the International Fighter Conference in Munich (early Nov 2026) the commander of Ukraine's F-16 unit said his
-pilots have shot down about 4,700 one-way attack drones, 1,100 in October alone, mostly with the **20 mm gun**:
-missiles are saved for cruise missiles. The record is 9 drones in one sortie, landing with 80 of 400 rounds left.
-The gun is cheap, but it is dangerous: a slow piston drone is half the speed of the fighter's comfortable minimum,
+At the International Fighter Conference in Munich (5 Nov 2026) the commander of Ukraine's 107th Aviation Wing said
+its F-16s have shot down about 4,700 one-way attack drones, 1,100 in October alone, mostly with the **20 mm M61A1
+gun**, because air-to-air missiles are scarce. One pilot killed 8 drones in a sortie firing 400 rounds (100 left),
+then broke his own record days later with 9, landing with 80 rounds. "The tactic is simple: just get into range and
+fire the cannon." The gun is cheap, but it is dangerous: a slow piston drone is half the speed of the fighter's comfortable minimum,
 so you overtake it in seconds, you risk stalling low over the ground, and if you kill it too close its 50 kg warhead
-goes off in your face. (Source: defence24.com, 8 Nov 2026, reporting Gareth Jennings.)
+goes off in your face. (Sources: Euromaidan Press 6 Nov 2026, United24 6 Nov, Aerospace Global News, Air & Space
+Forces Magazine, defence24.com 8 Nov. The F-16 carries about 511 rounds; the game gives you 510.) The city in the
+game is fictional.
 
 You fly the night shift over a city whose lights are its power grid. The drones come in streams; every one that
-gets through knocks a district dark. You have a gun, 400 rounds, a fuel clock, and the real gunsight fighters use:
+gets through knocks a district dark. You have a gun, 510 rounds, a fuel clock, and the real gunsight fighters use:
 the **EEGS funnel**.
 
 ## The wow: an honest gun funnel
@@ -45,7 +51,7 @@ one real pilots describe: overtake, stall speed, ground, and warhead blast radiu
 2. First Stream: three piston drones in trail at ~600 m on a route with turns; NVG.
 3. Low and Slow: three drones at ~120 m; overtake, speedbrake/S-turns, stall and ground danger, blast radius.
 4. Jet Drones: three jet-powered drones at ~140 m/s that weave and change altitude; tail chase.
-5. The Record: a ten-drone raid with 400 rounds and a fuel clock. Beat 9.
+5. The Record: a ten-drone raid with 510 rounds and a fuel clock. Beat 9.
 
 ## Physics (honest but simplified; documented as approximate)
 - Point-mass flight model, nose = velocity vector (no AoA): roll-rate and G commands, lift = n g along the lift
@@ -84,3 +90,18 @@ no console errors; README, screenshot of real gameplay, index row, IDEAS entry; 
   route and reaches its aim point; autopilot bot wins nights 1 and 2 in a headless run (proves winnability).
 - Headless Edge load with `--enable-logging` for console errors; screenshot `?demo` mid-engagement and view it.
 - Manual: mobile layout at 390x844 and landscape 844x390 screenshots.
+
+## Ideation 2026-11-10 (why this one, today)
+Research today: HN front page and Show HN (Nov 9-10), itch.io jams (Ghost in the Machine, Imaginary Mini Jam),
+news follow-up on the F-16 gun record (facts corrected above). Candidates, scored novelty / wow / feasibility:
+- night-funnel (this): honest EEGS gun funnel vs drone streams at night - 4/5/3. Unbuilt yesterday; fits the
+  user's fighter-pilot interest; last flight build was 2026-10-27 and yesterday's build was a DOM/CSS game, so the
+  technique cluster does not repeat.
+- hoot: program a mercury-delay-line computer to play a tune - 5/3/3 (kept in backlog; strong).
+- fade-stripes: dystopian through-wall motion sensing from TV/WiFi selective fading (maurycyz "Your TV can see
+  through walls", HN 2026-11-10) - 4/4/4, but too close to blade-rate's waterfall DSP and light-alibi's geolocation.
+- vanity-modulus: craft an RSA key whose public modulus spells a message, then see why it is still (or isn't)
+  secure (maurycyz "Horrible public key tricks", HN 2026-11-10) - 3/3/4; security streak, space it.
+- malloc-arena (backlog) - 3/2/4.
+Picked night-funnel: highest wow, a real technical core (the funnel is computed, not drawn), and a clear 5-night arc.
+Scope guard: canvas 2D projection only (no WebGL), flat ground with city lights as point sprites, simple drones.

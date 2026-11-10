@@ -45,6 +45,8 @@ you thought of but did not build.
 - malloc-arena | game | be the heap allocator: place blocks from a request stream, split/coalesce free lists, fight fragmentation (cf. HN "What is malloc doing, anyway?", 2026-11-09) | systems sim | 3/2/4 on 2026-11-09
 - paper-dart | toy | fold a paper airplane on a crease grid and glide-test it (CG, dihedral, elevator trim) (cf. HN foldableflight, 2026-11-09) | folding geometry, glide physics | 3/4/2 on 2026-11-09
 - glyph-xray | tool | paste any text and reveal hidden Unicode: tag-character ASCII smuggling (LLM prompt injection), bidi Trojan Source, zero-width marks, mixed-script homoglyphs; decode/encode payloads | Unicode analysis, security education | 3/3/5 on 2026-11-09 (tool; security - space it)
+- fade-stripes | game | dystopian through-wall surveillance: spot, count and clock people in other rooms from selective-fading stripes in an ambient TV/WiFi signal waterfall (stripe spacing = path-length change per wavelength) (cf. maurycyz "Your TV can see through walls", HN 2026-11-10) | multipath sim, waterfall DSP | 4/4/4 on 2026-11-10 (close to blade-rate; space it)
+- vanity-modulus | toy | forge an RSA public key whose modulus spells a chosen message and learn why that does or doesn't weaken it (cf. maurycyz "Horrible public key tricks", HN 2026-11-10) | BigInt RSA, primality tests | 3/3/4 on 2026-11-10 (security; space it)
 - (reentry-footprint could also cover the Nov 2026 "save Hubble" reboost story: plan a reboost before decay)
 
 ## Interests of the user (use for inspiration, not as a straitjacket)
