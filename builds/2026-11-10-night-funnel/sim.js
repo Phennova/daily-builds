@@ -262,7 +262,8 @@
       coach: [
         'Follow the box. Throttle back: the drone flies at 185 km/h, you stall near 210.',
         'The curved green line is the funnel: where your last 1.5 s of bullets are right now.',
-        'Fly so the drone sits between the funnel walls where the walls are exactly its wingspan apart.',
+        'The small ring on the funnel is your bullets at the drone's range. Put the drone in the ring.',
+        'Up close, the funnel walls are exactly its wingspan apart where it sits: wingtips on the walls.',
         'IN RANGE at 150-700 m. Short bursts. Stay beyond 150 m when it blows.'
       ],
       player: { x: 0, y: 7000, alt: 700, hdg: Math.PI, speed: 130 },
@@ -293,8 +294,8 @@
       }))
     },
     {
-      id: 5, name: 'The Record', sub: 'Ten drones on three axes. 510 rounds, one tank of fuel. Beat nine.', nvg: true, fuel: 700, pass: 4, record: 9,
-      player: { x: 0, y: 9000, alt: 800, hdg: Math.PI, speed: 150 },
+      id: 5, name: 'The Record', sub: 'Ten drones on three axes. 510 rounds, one tank of fuel. Beat nine.', nvg: true, fuel: 700, pass: 3, record: 9,
+      player: { x: 1500, y: 16500, alt: 750, hdg: Math.PI * 0.95, speed: 150 },
       drones: (function () {
         const out = [];
         const axes = [
@@ -484,6 +485,18 @@
     return { roll, pull: clamp(pull, -1, 1) };
   }
 
+  function funnelMiss(w, d, R) {
+    const pts = funnel(w.hist, w.t, FUNNEL_TAUS);
+    for (let i = 1; i < pts.length; i++) {
+      if (pts[i].range >= R) {
+        const a = pts[i - 1], b = pts[i], k = (R - a.range) / Math.max(1e-6, b.range - a.range);
+        const p = add(a.p, mul(sub(b.p, a.p), k));
+        return len(sub(p, d.pos));
+      }
+    }
+    return 1e9;
+  }
+
   function bot(w) {
     const j = w.jet;
     const inp = { roll: 0, pull: 0, thr: 0.7, brake: false, fire: false };
@@ -506,13 +519,17 @@
       dir = norm(sub(back, j.pos));
       const closV = dot(sub(j.vel, d.vel), norm(rel));
       const wantClose = clamp((R - 330) * 0.06, -8, 70);
-      const vMin = 70;
+      const vMin = bot.vMin;
       const wantV = Math.max(vMin, len(d.vel) + wantClose);
       const V = len(j.vel);
       inp.thr = clamp(0.5 + (wantV - V) * 0.05, 0.05, 0.95);
       inp.brake = V > wantV + 10;
       const ang = Math.acos(clamp(dot(norm(sub(aim, j.pos)), j.f), -1, 1));
-      inp.fire = R > 190 && R < 720 && ang * R < 2.2 && d.state === 'fly';
+      if (bot.useFunnel) {
+        // shoot like a pilot: only the funnel is consulted (where earlier rounds are now at the drone's range)
+        const m = funnelMiss(w, d, R);
+        inp.fire = R > 190 && R < 720 && m < bot.tol && d.state === 'fly';
+      } else inp.fire = R > 190 && R < 720 && ang * R < bot.tol && d.state === 'fly';
       if (R < 170) { // break off: too close to the warhead - slide out to the side
         dir = norm(add(j.f, mul(cross(j.f, [0, 0, 1]), 0.5)));
         inp.fire = false;
@@ -533,6 +550,8 @@
     inp.roll = st.roll; inp.pull = st.pull;
     return inp;
   }
+
+  bot.vMin = 62; bot.tol = 2.2; bot.useFunnel = false;
 
   const NF = {
     G, DT, AC, GUN, DRONE, BLAST_R, NIGHTS, FUNNEL_TAUS,

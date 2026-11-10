@@ -42,7 +42,7 @@
     <h2>How to play</h2>
     <ul>
       <li><b>The funnel</b> is the curved green pair of lines. It shows where every bullet you fired in the last 1.5 seconds is <i>right now</i> (the older bullets were fired along your old nose, so it bends when you turn). Its width is exactly a 2.5&nbsp;m wingspan at that range, and the bars mark 200, 400, 600 and 800&nbsp;m.</li>
-      <li><b>To shoot:</b> fly so the drone's wingtips touch both funnel walls where the drone is. That is the right range and the right lead at once. Hold FIRE in short bursts (100 rounds a second, you carry 510).</li>
+      <li><b>To shoot:</b> fly so the drone's wingtips touch both funnel walls where the drone is. That is the right range and the right lead at once. With a lock, a small ring on the funnel (BATR, bullets at target range) marks exactly where your bullets are at the drone's distance: put the drone in the ring. Hold FIRE in short bursts (100 rounds a second, you carry 510).</li>
       <li><b>Slow targets:</b> a piston drone flies 185 km/h and you stall near 210. Throttle back, use the speed brake, and do not overshoot.</li>
       <li><b>Do not shoot too close.</b> Under 150&nbsp;m a warhead blast hurts you. Debris and fireballs do too. Low and slow, the ground is also a threat.</li>
       <li>Every drone that gets through darkens a district. Clear enough drones before fuel runs out.</li>
@@ -82,8 +82,7 @@
   </div>
 </div>
 
-<script>window.addEventListener('error', function (e) { document.documentElement.setAttribute('data-err', (document.documentElement.getAttribute('data-err') || '') + (e.error && e.error.stack ? e.error.stack.replace(/[
-]+/g, ' | ') : e.message) + ' '); });</script>
+<script>window.addEventListener('error', function (e) { document.documentElement.setAttribute('data-err', (document.documentElement.getAttribute('data-err') || '') + (e.error && e.error.stack ? e.error.stack.replace(/\s+/g, ' ') : e.message) + ' '); });</script>
 <script src="sim.js"></script>
 <script src="render.js"></script>
 <script src="audio.js"></script>

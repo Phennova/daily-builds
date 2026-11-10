@@ -85,21 +85,27 @@ const turnPts = funnelCheck(5 / 8, '6 g turn');
   ok(w.over && w.result.through === 1 && !w.districts[0].lit, `drone reached Old Town and it went dark (t=${w.t.toFixed(0)} s, why=${w.result.why})`);
 }
 
-// 5. the autopilot bot wins nights (proves winnability with the real gun and hit tests)
-for (let ni = 0; ni < NF.NIGHTS.length; ni++) {
-  const seeds = [11, 22, 33];
-  let wins = 0; const lines = [];
-  for (const seed of seeds) {
-    const w = NF.newWorld(ni, { seed });
-    let n = 0;
-    while (!w.over && n < 120 * 900) { NF.step(w, NF.bot(w)); n++; }
-    const r = w.result || {};
-    if (r.won) wins++;
-    lines.push(`${r.kills}/${r.total} k, ${r.fired} rds, ${r.hits} hits, dmg ${r.damage}, ${r.why}${r.deadWhy ? ' (' + r.deadWhy + ')' : ''}, ${Math.round(r.time)} s, ${r.grade}`);
+// 5. the autopilot bot wins nights (proves winnability with the real gun and hit tests).
+//    Mode "funnel": the bot steers with lead but decides WHEN to shoot only from the funnel (drone within
+//    3 m of where the earlier rounds are at its range), the way a pilot uses the sight.
+function runBot(ni, seed, useFunnel) {
+  NF.bot.useFunnel = useFunnel; NF.bot.tol = useFunnel ? 3 : 2.2;
+  const w = NF.newWorld(ni, { seed });
+  let n = 0;
+  while (!w.over && n < 120 * 900) { NF.step(w, NF.bot(w)); n++; }
+  NF.bot.useFunnel = false; NF.bot.tol = 2.2;
+  return w.result || {};
+}
+for (const mode of [false, true]) {
+  for (let ni = 0; ni < NF.NIGHTS.length; ni++) {
+    let wins = 0; const lines = [];
+    for (const seed of [11, 22, 33]) {
+      const r = runBot(ni, seed, mode);
+      if (r.won) wins++;
+      lines.push(`${r.kills}/${r.total} k, ${r.fired} rds, ${r.hits} hits, dmg ${r.damage}, ${r.why}${r.deadWhy ? ' (' + r.deadWhy + ')' : ''}, ${Math.round(r.time)} s, ${r.grade}`);
+    }
+    ok(wins >= 2, `${mode ? 'funnel-only shooter' : 'lead-computing bot'} night ${ni + 1}: ${wins}/3 wins  [${lines.join(' | ')}]`);
   }
-  const must = ni < 2;
-  const msg = `night ${ni + 1} bot: ${wins}/3 wins  [${lines.join(' | ')}]`;
-  if (must) ok(wins >= 2, msg); else console.log('info ' + msg);
 }
 
 console.log(fails ? `\n${fails} FAILED` : '\nall tests passed');

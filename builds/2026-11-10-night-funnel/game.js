@@ -6,7 +6,7 @@
   const q = new URLSearchParams(location.search);
   const DEMO = q.has('demo');
   const cv = $('cv');
-  const coarse = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+  const coarse = q.has('touch') || matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
   if (!coarse) document.body.classList.add('noTouch');
 
   let store = {};
@@ -20,6 +20,14 @@
   addEventListener('resize', R.resize);
   addEventListener('orientationchange', () => setTimeout(R.resize, 200));
 
+  // safe-area insets (iPhone notch / home bar) for canvas-drawn HUD text
+  const sa = document.createElement('div');
+  sa.style.cssText = 'position:fixed;left:0;top:0;width:0;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)';
+  document.body.appendChild(sa);
+  const safe = () => { const cs = getComputedStyle(sa); return { t: parseFloat(cs.paddingTop) || 0, b: parseFloat(cs.paddingBottom) || 0 }; };
+
+  let si = safe();
+  addEventListener('resize', () => { si = safe(); });
   let screen = 'title', w = null, nightIdx = 0, nvg = true, muted = !!store.muted, resultTimer = 0, acc = 0, last = 0;
   const GRADES = { A: 5, B: 4, C: 3, D: 2, F: 1 };
 
@@ -203,7 +211,7 @@
         const warn = j.dead ? '' : (alt + vz * 3 < 60 && vz < -3 || alt < 90 && vz < 0) ? 'pullup' : NF.nAvail(j.speed) < 1.5 ? 'stall' : '';
         A.update({ thr: j.thr, speed: j.speed, firing: w.firing, range, closure: clos, inRange, warn: w.over ? '' : warn });
       }
-      R.draw(w, { nvg, safeTop: 0, safeBottom: 0 });
+      R.draw(w, { nvg, safeTop: si.t, safeBottom: si.b, textLift: coarse && innerHeight > innerWidth ? 112 : 0 });
       if (w.over && screen === 'play') A.update({ thr: 0.3, speed: 100, firing: false, range: -1, closure: 0, inRange: false, warn: '' });
       return;
     }

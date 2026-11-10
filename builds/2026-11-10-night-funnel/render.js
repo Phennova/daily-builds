@@ -250,7 +250,8 @@
     ctx.textAlign = align || 'left'; ctx.fillStyle = col || HUD; ctx.fillText(s, x, y);
   }
 
-  function drawFunnel(c, w) {
+  function drawFunnel(c, w, tgtRange, inRange) {
+    R.batr = null;
     const pts = NF.funnel(w.hist, w.t, NF.FUNNEL_TAUS);
     const sc = [];
     for (const p of pts) {
@@ -280,6 +281,20 @@
       ctx.beginPath(); ctx.moveTo(L[i][0], L[i][1]); ctx.lineTo(Rr[i][0], Rr[i][1]); ctx.stroke();
       txt(String(rg / 100), Rr[i][0] - 6 * S, Rr[i][1] + 4 * S, 10 * S, 'right');
     });
+    // BATR (bullets at target range): with a lock, a ring on the funnel where the bullets are at the
+    // drone's current range. On a small screen this is easier to read than the 2.5 m wall spacing.
+    if (tgtRange > 0) {
+      const i = sc.findIndex(p => p.range >= tgtRange);
+      if (i > 0) {
+        const a = sc[i - 1], b = sc[i], k = (tgtRange - a.range) / Math.max(1e-6, b.range - a.range);
+        const x = a.x + (b.x - a.x) * k, y = a.y + (b.y - a.y) * k, hw = Math.max((a.width + (b.width - a.width) * k) / 2, 1.2);
+        const rr = Math.max(hw + 3 * S, 7 * S);
+        ctx.strokeStyle = inRange ? '#eaffef' : HUD; ctx.lineWidth = inRange ? 2 : 1.4; ctx.globalAlpha = inRange ? 1 : 0.7;
+        ctx.beginPath(); ctx.arc(x, y, rr, 0, 6.2832); ctx.stroke();
+        ctx.globalAlpha = 1;
+        R.batr = { x, y, r: rr };
+      }
+    }
   }
 
   function drawPitchLadder(c, hz, nvg) {
@@ -327,7 +342,10 @@
     const fs = 12 * S;
     ctx.lineWidth = 1.5;
     drawPitchLadder(c, hz, ui.nvg);
-    drawFunnel(c, w);
+    const dl = w.lock >= 0 ? w.drones[w.lock] : null;
+    let tR = -1;
+    if (dl && (dl.state === 'fly' || dl.state === 'dive')) tR = len(sub(dl.pos, j.pos));
+    drawFunnel(c, w, tR > 0 && tR < 1300 ? tR : -1, tR > 150 && tR < 700);
     // gun cross + flight path marker (nose = velocity in this model)
     ctx.strokeStyle = HUD; ctx.lineWidth = 1.6;
     ctx.beginPath(); ctx.moveTo(cx - 9 * S, cy); ctx.lineTo(cx - 3 * S, cy); ctx.moveTo(cx + 3 * S, cy); ctx.lineTo(cx + 9 * S, cy); ctx.moveTo(cx, cy - 9 * S); ctx.lineTo(cx, cy - 3 * S); ctx.moveTo(cx, cy + 3 * S); ctx.lineTo(cx, cy + 9 * S); ctx.stroke();
@@ -379,7 +397,7 @@
     const hdg = (Math.round(Math.atan2(j.f[0], j.f[1]) * 180 / Math.PI) + 360) % 360;
     txt(String(hdg).padStart(3, '0'), cx, top, fs * 1.3, 'center');
     // ammo / fuel / damage
-    const bot = H - 16 * S - (ui.safeBottom || 0);
+    const bot = H - 16 * S - (ui.safeBottom || 0) - (ui.textLift || 0);
     txt('RNDS ' + w.ammo, cx, bot, fs * 1.4, 'center', w.ammo < 60 ? '#ffd27a' : HUD);
     txt('KILLS ' + w.kills + '/' + w.drones.length + '   FUEL ' + Math.round(100 * j.fuel / N.fuel) + '%' + (j.damage > 0 ? '   DMG ' + Math.round(j.damage) : ''), cx, bot - fs * 1.7, fs * 0.9, 'center', j.damage > 40 ? '#ff9d8a' : HUD);
     // map
