@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#020a05">
+<title>Night Funnel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="touch" class="hidden">
+  <div id="stickRing"><div id="stickKnob"></div></div>
+  <div id="thrWrap"><div id="thrFill"></div><div id="thrLabel">THR</div></div>
+  <button id="brakeBtn" class="tbtn">BRAKE</button>
+  <button id="fireBtn" class="tbtn">FIRE</button>
+</div>
+
+<div id="topbtns" class="hidden">
+  <button id="nvgBtn" title="Night vision (N)">NVG</button>
+  <button id="muteBtn" title="Mute (M)">SND</button>
+  <button id="pauseBtn" title="Pause (P)">II</button>
+</div>
+
+<div id="title" class="screen">
+  <div class="card">
+    <h1>NIGHT FUNNEL</h1>
+    <p class="tag">Shoot down one-way attack drones with a 20&nbsp;mm cannon and the gunsight real fighter pilots use.</p>
+    <p class="small">In November 2026 Ukraine's F-16 pilots said they had shot down about 4,700 drones, mostly with the gun. The record: nine in a single sortie. The city here is fictional.</p>
+    <div id="nights"></div>
+    <div class="row">
+      <button id="howBtn" class="ghost">How to play</button>
+      <label class="chk"><input type="checkbox" id="invert"> Invert pitch</label>
+    </div>
+    <p class="small">Landscape on a phone is best. Headphones recommended.</p>
+  </div>
+</div>
+
+<div id="how" class="screen hidden">
+  <div class="card">
+    <h2>How to play</h2>
+    <ul>
+      <li><b>The funnel</b> is the curved green pair of lines. It shows where every bullet you fired in the last 1.5 seconds is <i>right now</i> (the older bullets were fired along your old nose, so it bends when you turn). Its width is exactly a 2.5&nbsp;m wingspan at that range, and the bars mark 200, 400, 600 and 800&nbsp;m.</li>
+      <li><b>To shoot:</b> fly so the drone's wingtips touch both funnel walls where the drone is. That is the right range and the right lead at once. Hold FIRE in short bursts (100 rounds a second, you carry 510).</li>
+      <li><b>Slow targets:</b> a piston drone flies 185 km/h and you stall near 210. Throttle back, use the speed brake, and do not overshoot.</li>
+      <li><b>Do not shoot too close.</b> Under 150&nbsp;m a warhead blast hurts you. Debris and fireballs do too. Low and slow, the ground is also a threat.</li>
+      <li>Every drone that gets through darkens a district. Clear enough drones before fuel runs out.</li>
+    </ul>
+    <p class="small"><b>Touch:</b> drag on the left half to steer (down = pull up), FIRE and BRAKE on the right, slide the bar for throttle.
+      <b>Keys:</b> arrows / WASD steer (down or S = pull up), Space or J fire, Shift/Ctrl throttle, B brake, N night vision, M mute, P pause.
+      Neutral stick holds your climb angle, even banked.</p>
+    <div class="row"><button id="howClose">Back</button></div>
+  </div>
+</div>
+
+<div id="brief" class="screen hidden">
+  <div class="card">
+    <div class="small" id="bNum"></div>
+    <h2 id="bName"></h2>
+    <p id="bSub"></p>
+    <p class="small" id="bGoal"></p>
+    <div class="row"><button id="flyBtn">Fly</button><button id="bBack" class="ghost">Back</button></div>
+  </div>
+</div>
+
+<div id="pause" class="screen hidden">
+  <div class="card">
+    <h2>Paused</h2>
+    <div class="row"><button id="resumeBtn">Resume</button><button id="quitBtn" class="ghost">Quit to menu</button></div>
+  </div>
+</div>
+
+<div id="result" class="screen hidden">
+  <div class="card">
+    <div class="small" id="rNum"></div>
+    <h2 id="rTitle"></h2>
+    <div id="rGrade"></div>
+    <div id="rStats"></div>
+    <p class="small" id="rNote"></p>
+    <div class="row"><button id="nextBtn">Next night</button><button id="retryBtn">Retry</button><button id="menuBtn" class="ghost">Menu</button><button id="copyBtn" class="ghost">Copy result</button></div>
+  </div>
+</div>
+
+<script>window.addEventListener('error', function (e) { document.documentElement.setAttribute('data-err', (document.documentElement.getAttribute('data-err') || '') + (e.error && e.error.stack ? e.error.stack.replace(/[
+]+/g, ' | ') : e.message) + ' '); });</script>
+<script src="sim.js"></script>
+<script src="render.js"></script>
+<script src="audio.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

@@ -71,7 +71,10 @@
     j.u = norm(rot(u, f, p * dt));
     // FBW G command: stick neutral = 1 g, pull to the limit, push to -3 g
     const pull = clamp(inp.pull, -1, 1);
-    j.nCmd = pull >= 0 ? 1 + pull * (AC.nMax - 1) : 1 + pull * (1 - AC.nMin);
+    // inp.hold (human pilots): neutral stick holds the flight-path angle when banked, like the F-16's flight-path-hold
+    const bRaw = Math.sqrt(Math.max(0, 1 - j.f[2] * j.f[2])) / Math.max(0.3, j.u[2]);
+    const base = inp.hold ? clamp(1 + (bRaw - 1) * smooth(0.05, 0.4, j.u[2]), 0.3, 3.3) : 1;
+    j.nCmd = pull >= 0 ? base + pull * (AC.nMax - base) : base + pull * (base - AC.nMin);
     j.n += (j.nCmd - j.n) * Math.min(1, dt / AC.gLag);
     const na = nAvail(V);
     const n = clamp(j.n, -na * 0.5, na);
