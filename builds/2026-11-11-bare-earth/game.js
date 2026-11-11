@@ -660,5 +660,34 @@
       S.pins.push({ x: S.world.decoys[0].x, y: S.world.decoys[0].y, type: 'mound' });
       submit();
     }, 150);
+  } else if (params.has('selftest')) {
+    // click-through of every screen and tool; result goes into #selftest for --dump-dom
+    const log = [], out = document.createElement('pre'); out.id = 'selftest'; document.body.appendChild(out);
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    (async () => {
+      try {
+        for (let k = 0; k < BE.STRIPS.length; k++) {
+          startStrip(k); await wait(80);
+          if ($('brief').classList.contains('hidden')) throw new Error('brief not shown for strip ' + (k + 1));
+          $('briefGo').click(); await wait(20);
+          VIEWS.forEach(([v]) => setView(v));
+          $('az').value = 45; $('az').dispatchEvent(new Event('input'));
+          $('win').value = 12; $('slope').value = 50; runFilter();
+          S.prof = { a: [300, 300], b: [420, 330] }; computeProfile();
+          S.scan = 1; resize();
+          const [sx, sy] = toScreen(S.world.features[0].x, S.world.features[0].y);
+          S.ptype = S.world.features[0].type; setMode('pin'); tap(sx, sy); tap(sx, sy); tap(sx, sy); // add, remove, add
+          S.world.features.slice(1, S.spec.quota + 1).forEach(f => S.pins.push({ x: f.x, y: f.y, type: f.type }));
+          submit(); await wait(30);
+          const r = S.result;
+          log.push(`strip ${k + 1}: pins ${S.pins.length} hits ${r.hits.length}/${r.total} fps ${r.fps.length} pass ${r.pass} grade ${r.grade} li ${$('dbList').children.length}`);
+          peel(50); peel(100);
+        }
+        randomSurvey(4242); await wait(80); $('briefGo').click(); submit(); await wait(20);
+        log.push('random: ' + S.world.features.length + ' features, empty-ish report handled: ' + !!S.result);
+        buildTitle(); show('title');
+        out.textContent = 'SELFTEST OK\n' + log.join('\n');
+      } catch (e) { out.textContent = 'SELFTEST FAIL ' + e.message + '\n' + (e.stack || '') + '\n' + log.join('\n'); }
+    })();
   } else show('title');
 })();
