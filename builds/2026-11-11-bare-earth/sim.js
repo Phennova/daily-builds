@@ -557,6 +557,8 @@
     for (const a of azs) { const h = hillshade(z, a, alt, 2); for (let i = 0; i < N * N; i++) out[i] += h[i] / azs.length; }
     return out;
   }
+  // 3-directional hillshade (Kokalj 2016): one sun per colour channel, no blind azimuth
+  function rgbHillshade(z, alt) { return [hillshade(z, 0, alt, 2), hillshade(z, 120, alt, 2), hillshade(z, 240, alt, 2)]; }
   function slopeDeg(z) {
     const out = new Float32Array(N * N);
     for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
@@ -708,7 +710,7 @@
     N, CELL, SIZE, STRIPS, TYPES, rng, fbm, vnoise, clamp, smooth,
     pyramid, platform, causeway, reservoir, cone, sinkhole, track,
     randomSpec, makeWorld, cellReturns, groundFilter, open, fillHoles,
-    hillshade, multiHillshade, slopeDeg, localRelief, skyView, boxMean, lowPointDensity, profile, score, sampleMax, featDist, DECOY_NOTE
+    hillshade, multiHillshade, rgbHillshade, slopeDeg, localRelief, skyView, boxMean, lowPointDensity, profile, score, sampleMax, featDist, DECOY_NOTE
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = BE;
   else root.BE = BE;

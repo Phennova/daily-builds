@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e110d">
+<title>Bare Earth - lidar archaeology</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="title" class="screen">
+  <div class="card wide">
+    <h1>BARE EARTH</h1>
+    <p class="tag">Find a lost Maya city under the jungle using nothing but laser pulses.</p>
+    <p class="small">An aircraft has swept 800 m of rainforest with lidar. Millions of pulses bounced off leaves; a few slipped through to the ground. Filter them, light the terrain from any sun you like, slice through the point cloud, and report what humans built here. Inspired by a November 2026 find of an unmapped Maya site in public NASA G-LiHT lidar. Everything below is simulated and the sites are fictional.</p>
+    <div id="strips"></div>
+    <div class="row">
+      <button id="howBtn" class="ghost">How to play</button>
+      <button id="randBtn" class="ghost">Random survey</button>
+    </div>
+  </div>
+</div>
+
+<div id="how" class="screen hidden">
+  <div class="card wide scroll">
+    <h2>How lidar archaeology works</h2>
+    <ol class="how">
+      <li><b>Pulses.</b> Each 2 m cell got about five laser pulses. Most hit the canopy (green) or the understory; in dense forest only a few percent reach the ground (brown).</li>
+      <li><b>Ground filter.</b> The filter keeps the lowest return in each cell, then runs a progressively larger <i>morphological opening</i> (Zhang et al. 2003). <b>Window</b> = the widest blob it can strip off: too small and patches with no ground returns stay in as fake mounds. <b>Slope</b> = how steep real ground may be: too loose keeps understory junk, too tight and it treats a pyramid like a tree and cuts its top off.</li>
+      <li><b>Views.</b> <b>Hillshade</b> lights the bare earth from a sun you drag; features that run <i>along</i> the light vanish. <b>3-sun RGB</b> puts a sun from the north, south-east and south-west in the red, green and blue channels, so nothing hides from all three. <b>Relief</b> (local relief model) subtracts the smoothed terrain so big hills disappear and metre-high mounds pop. <b>Sky-view</b> shows how much sky each point sees: no blind direction. <b>Coverage</b> shows where the filter had real ground points (bright) and where it guessed (red). <b>Canopy</b> is what a satellite sees.</li>
+      <li><b>Profile.</b> Switch to <b>Slice</b> and drag a line across a feature. You see the raw points along it. A real structure has brown ground points on it. A "mound" sitting on green points 3 m up is the filter fooling you.</li>
+      <li><b>Report.</b> Choose a type and tap the map to pin it (tap a pin to remove it). Types: <b>Pyramid</b> (tall, stepped), <b>Platform</b> (flat-topped, 1-3 m, straight edges), <b>Mound</b> (house mound, under ~1.3 m), <b>Causeway</b> (raised, dead straight road), <b>Reservoir</b> (flat-bottomed hollow with a berm). Then submit: the heritage institute checks your report against the ground truth.</li>
+    </ol>
+    <p class="small">Scoring: +100 per real feature, +50 if the type is right, -75 per false positive. Each strip has a quota and a false-positive limit. Not archaeology: karst cone hills (round, lumpy), sinkholes (funnel-shaped), tree-throws (pit and mound from a fallen tree), modern logging tracks (sunken, curving).</p>
+    <p class="small">Controls: drag to pan, pinch or wheel to zoom. Keys: 1-8 views, P pin, S slice, arrow keys pan, +/- zoom, M mute.</p>
+    <button id="howClose">Got it</button>
+  </div>
+</div>
+
+<div id="game" class="hidden">
+  <header id="bar">
+    <button id="menuBtn" class="icon" title="Menu" aria-label="Menu">&#9776;</button>
+    <div id="stripName">Strip</div>
+    <div id="pinCount"></div>
+    <button id="briefBtn" class="icon" title="Brief" aria-label="Brief">i</button>
+    <button id="muteBtn" class="icon" title="Mute (M)" aria-label="Mute">&#9835;</button>
+  </header>
+  <div id="mapWrap">
+    <canvas id="map"></canvas>
+    <div id="hint" class="hidden"></div>
+    <div id="busy" class="hidden">processing&hellip;</div>
+  </div>
+  <aside id="panel">
+    <section>
+      <div class="lab">Tool</div>
+      <div class="chips" id="tools">
+        <button data-mode="pin" class="on">Pin</button>
+        <button data-mode="slice">Slice</button>
+      </div>
+      <div class="chips" id="ptypes"></div>
+    </section>
+    <section id="profSec" class="hidden">
+      <div class="lab">Profile slice <span id="profInfo" class="muted"></span></div>
+      <canvas id="prof"></canvas>
+      <div class="legend"><span class="dot g"></span>ground <span class="dot v"></span>vegetation <span class="line"></span>your bare-earth model</div>
+    </section>
+    <section>
+      <div class="lab">View</div>
+      <div class="chips" id="views"></div>
+      <div id="sunCtl" class="ctl">
+        <canvas id="dial" width="88" height="88"></canvas>
+        <div class="sl">
+          <label>Sun azimuth <b id="azV"></b><input type="range" id="az" min="0" max="359" step="1"></label>
+          <label>Sun altitude <b id="altV"></b><input type="range" id="alt" min="5" max="80" step="1"></label>
+        </div>
+      </div>
+      <div id="lrmCtl" class="ctl hidden">
+        <div class="sl"><label>Trend radius <b id="lrmV"></b><input type="range" id="lrm" min="6" max="40" step="2"></label></div>
+      </div>
+    </section>
+    <section>
+      <div class="lab">Ground filter <span id="filtInfo" class="muted"></span></div>
+      <div class="sl">
+        <label>Window <b id="winV"></b><input type="range" id="win" min="4" max="40" step="2"></label>
+        <label>Slope <b id="slopeV"></b><input type="range" id="slope" min="10" max="150" step="5"></label>
+      </div>
+    </section>
+    <section>
+      <button id="submitBtn" class="big">Submit report</button>
+    </section>
+  </aside>
+</div>
+
+<div id="brief" class="screen hidden">
+  <div class="card">
+    <h2 id="briefTitle"></h2>
+    <p id="briefText"></p>
+    <p id="briefQuota" class="small"></p>
+    <button id="briefGo">Start survey</button>
+  </div>
+</div>
+
+<div id="debrief" class="screen hidden">
+  <div class="card wide scroll">
+    <h2 id="dbTitle"></h2>
+    <p id="dbSummary"></p>
+    <div id="peelWrap"><canvas id="peelMap"></canvas>
+      <label class="peel">Forest <input type="range" id="peel" min="0" max="100" value="100"> Bare earth</label>
+    </div>
+    <p id="dbLesson" class="lesson"></p>
+    <ul id="dbList"></ul>
+    <div class="row">
+      <button id="dbRetry" class="ghost">Back to the strip</button>
+      <button id="dbNext">Next strip</button>
+      <button id="dbMenu" class="ghost">Menu</button>
+    </div>
+  </div>
+</div>
+
+<div id="err" class="hidden"></div>
+<script src="sim.js"></script>
+<script src="audio.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
