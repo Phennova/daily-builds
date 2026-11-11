@@ -10,7 +10,8 @@
 <body>
 
 <div id="title" class="screen">
-  <div class="card wide">
+  <canvas id="titleBg" aria-hidden="true"></canvas>
+  <div class="card wide scroll">
     <h1>BARE EARTH</h1>
     <p class="tag">Find a lost Maya city under the jungle using nothing but laser pulses.</p>
     <p class="small">An aircraft has swept 800 m of rainforest with lidar. Millions of pulses bounced off leaves; a few slipped through to the ground. Filter them, light the terrain from any sun you like, slice through the point cloud, and report what humans built here. Inspired by a November 2026 find of an unmapped Maya site in public NASA G-LiHT lidar. Everything below is simulated and the sites are fictional.</p>
@@ -43,6 +44,7 @@
     <button id="menuBtn" class="icon" title="Menu" aria-label="Menu">&#9776;</button>
     <div id="stripName">Strip</div>
     <div id="pinCount"></div>
+    <button id="submitBar" class="sbar">Submit</button>
     <button id="briefBtn" class="icon" title="Brief" aria-label="Brief">i</button>
     <button id="muteBtn" class="icon" title="Mute (M)" aria-label="Mute">&#9835;</button>
   </header>
@@ -86,7 +88,7 @@
         <label>Slope <b id="slopeV"></b><input type="range" id="slope" min="10" max="150" step="5"></label>
       </div>
     </section>
-    <section>
+    <section id="submitSec">
       <button id="submitBtn" class="big">Submit report</button>
     </section>
   </aside>

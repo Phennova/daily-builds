@@ -193,6 +193,7 @@
   function pinShape(c, x, y, col, label, ring) {
     c.fillStyle = 'rgba(0,0,0,.55)'; c.beginPath(); c.arc(x, y + 1, 10, 0, 7); c.fill();
     c.fillStyle = col; c.beginPath(); c.arc(x, y, 9, 0, 7); c.fill();
+    c.strokeStyle = 'rgba(12,10,6,.85)'; c.lineWidth = 1.5; c.stroke();
     if (ring) { c.strokeStyle = ring; c.lineWidth = 3; c.beginPath(); c.arc(x, y, 12, 0, 7); c.stroke(); }
     c.fillStyle = '#111'; c.font = 'bold 11px system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillText(label, x, y + 0.5); c.textAlign = 'left'; c.textBaseline = 'alphabetic';
@@ -446,7 +447,46 @@
   }
 
   // ---------- screens ----------
-  function show(id) { ['title', 'how', 'game', 'brief', 'debrief'].forEach(s => $(s).classList.toggle('hidden', s !== id && !(id === 'brief' && s === 'game') && !(id === 'debrief' && s === 'game'))); }
+  function show(id) {
+    ['title', 'how', 'game', 'brief', 'debrief'].forEach(s => $(s).classList.toggle('hidden', s !== id && !(id === 'brief' && s === 'game') && !(id === 'debrief' && s === 'game')));
+    if (id === 'title') titleBg(); else cancelAnimationFrame(tbg.raf);
+  }
+  // ---------- title background: strip 1 with and without its forest, a scan line sweeping between ----------
+  let worldCache = null;
+  const tbg = $('titleBg');
+  tbg.raf = 0;
+  function titleBg() {
+    if (!tbg.truth) { // build once, after the title has painted
+      if (!tbg.pending) tbg.pending = setTimeout(() => {
+        const w = BE.makeWorld(BE.STRIPS[0]); worldCache = w;
+        makeCanopyImage(w); makeTruthImage(w);
+        const cp = src => { const c = document.createElement('canvas'); c.width = N; c.height = N; c.getContext('2d').drawImage(src, 0, 0); return c; };
+        tbg.can = cp(canOff); tbg.truth = cp(truthOff);
+        if (!$('title').classList.contains('hidden')) titleBg();
+      }, 60);
+      return;
+    }
+    cancelAnimationFrame(tbg.raf);
+    const t0 = performance.now();
+    const frame = () => {
+      const r = tbg.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1);
+      const W = Math.round(r.width * d), H = Math.round(r.height * d);
+      if (tbg.width !== W || tbg.height !== H) { tbg.width = W; tbg.height = H; }
+      const c = tbg.getContext('2d');
+      // plaza group in the free margin beside the card on wide screens, centred on phones
+      const wide = r.width > 900, fx = wide ? Math.max(W * 0.17, 140 * d) : W / 2;
+      const s = Math.max(W, H) / (N * (wide ? 0.5 : 0.7)), ox = fx - 215 * s, oy = H / 2 - 185 * s;
+      const u = reduced ? 0.55 : 0.5 + 0.45 * Math.sin((performance.now() - t0) / 3800 - 1.2);
+      const xl = Math.round(W * u);
+      c.drawImage(tbg.can, ox, oy, N * s, N * s);
+      c.save(); c.beginPath(); c.rect(0, 0, xl, H); c.clip(); c.drawImage(tbg.truth, ox, oy, N * s, N * s); c.restore();
+      c.fillStyle = 'rgba(255,70,45,.85)'; c.fillRect(xl - d, 0, 2 * d, H);
+      const g = c.createLinearGradient(xl, 0, xl + 40 * d, 0); g.addColorStop(0, 'rgba(255,70,45,.25)'); g.addColorStop(1, 'rgba(255,70,45,0)');
+      c.fillStyle = g; c.fillRect(xl, 0, 40 * d, H);
+      if (!reduced && !$('title').classList.contains('hidden')) tbg.raf = requestAnimationFrame(frame);
+    };
+    frame();
+  }
   function buildTitle() {
     const box = $('strips'); box.innerHTML = '';
     BE.STRIPS.forEach((sp, k) => {
@@ -466,7 +506,7 @@
     $('stripName').textContent = (S.spec.id ? S.spec.id + '. ' : '') + S.spec.name;
     hint('');
     setTimeout(() => {
-      S.world = BE.makeWorld(S.spec);
+      S.world = worldCache && worldCache.spec === S.spec ? worldCache : BE.makeWorld(S.spec);
       const d = S.spec.defaults;
       $('win').value = d.win; $('slope').value = d.slope;
       S.az = d.az; S.alt = d.alt; S.view = d.view; S.lrmR = 16;
@@ -570,12 +610,12 @@
     c.globalAlpha = a;
     const tf = (x, y) => [x * k, y * k];
     // ground-truth outlines
-    c.lineWidth = Math.max(1.5, W / 400);
+    const lw = Math.max(1.5, W / 400);
     S.world.features.forEach(f => {
       const found = S.result.hits.some(h => h.feature === f.id);
-      c.strokeStyle = found ? '#8fd18a' : '#8fb7d8';
       c.setLineDash(found ? [] : [5, 4]);
-      outline(c, f, k);
+      c.strokeStyle = 'rgba(8,8,5,.75)'; c.lineWidth = lw + 2.5; outline(c, f, k, 2.5); // dark halo: outlines must read on pale ground
+      c.strokeStyle = found ? '#8fd18a' : '#8fd0ff'; c.lineWidth = lw; outline(c, f, k, 0);
     });
     c.setLineDash([]);
     const ring = new Map();
@@ -585,9 +625,9 @@
     S.pins.forEach((p, i) => drawPin(c, p, ring.get(i), tf));
     c.globalAlpha = 1;
   }
-  function outline(c, f, k) {
+  function outline(c, f, k, extra) {
     c.beginPath();
-    if (f.type === 'causeway') { c.moveTo(f.x0 * k, f.y0 * k); c.lineTo(f.x1 * k, f.y1 * k); c.lineWidth = Math.max(3, f.w * 2 * k); c.stroke(); c.lineWidth = Math.max(1.5, k * 1); return; }
+    if (f.type === 'causeway') { const lw = c.lineWidth; c.moveTo(f.x0 * k, f.y0 * k); c.lineTo(f.x1 * k, f.y1 * k); c.lineWidth = Math.max(3, f.w * 2 * k) + extra; c.stroke(); c.lineWidth = lw; return; }
     if (f.oval) { c.ellipse(f.x * k, f.y * k, f.a * k + 2, f.b * k + 2, f.rot, 0, 7); c.stroke(); return; }
     const cs = Math.cos(f.rot), sn = Math.sin(f.rot), a = f.a + 1.5, b = f.b + 1.5;
     [[-a, -b], [a, -b], [a, b], [-a, b]].forEach(([u, v], i) => {
@@ -598,6 +638,7 @@
   }
   $('peel').addEventListener('input', () => peel(+$('peel').value));
   $('submitBtn').onclick = submit;
+  $('submitBar').onclick = submit;
   $('dbRetry').onclick = () => { show('game'); draw(); };
   $('dbMenu').onclick = () => { buildTitle(); show('title'); };
   $('dbNext').onclick = () => {
@@ -664,12 +705,22 @@
     // click-through of every screen and tool; result goes into #selftest for --dump-dom
     const log = [], out = document.createElement('pre'); out.id = 'selftest'; document.body.appendChild(out);
     const wait = ms => new Promise(r => setTimeout(r, ms));
+    const overflow = name => { // layout check: nothing visible may stick out of the viewport sideways
+      const bad = [];
+      document.querySelectorAll('button, input, canvas, h1, h2, p, label, #bar > div').forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (r.width && r.height && (r.right > innerWidth + 1 || r.left < -1)) bad.push((el.id || el.tagName) + ' ' + Math.round(r.left) + '..' + Math.round(r.right));
+      });
+      log.push('layout ' + name + ' @' + innerWidth + 'x' + innerHeight + ': ' + (bad.length ? 'OVERFLOW ' + bad.slice(0, 5).join(', ') : 'ok'));
+    };
+    overflow('title');
     (async () => {
       try {
         for (let k = 0; k < BE.STRIPS.length; k++) {
           startStrip(k); await wait(80);
           if ($('brief').classList.contains('hidden')) throw new Error('brief not shown for strip ' + (k + 1));
           $('briefGo').click(); await wait(20);
+          if (k === 0) overflow('game');
           VIEWS.forEach(([v]) => setView(v));
           $('az').value = 45; $('az').dispatchEvent(new Event('input'));
           $('win').value = 12; $('slope').value = 50; runFilter();
@@ -681,12 +732,14 @@
           submit(); await wait(30);
           const r = S.result;
           log.push(`strip ${k + 1}: pins ${S.pins.length} hits ${r.hits.length}/${r.total} fps ${r.fps.length} pass ${r.pass} grade ${r.grade} li ${$('dbList').children.length}`);
+          if (k === 0) overflow('debrief');
           peel(50); peel(100);
         }
         randomSurvey(4242); await wait(80); $('briefGo').click(); submit(); await wait(20);
-        log.push('random: ' + S.world.features.length + ' features, empty-ish report handled: ' + !!S.result);
+        log.push('random: ' + S.world.features.length + ' features, zero-pin submit refused: ' + !S.result);
         buildTitle(); show('title');
         out.textContent = 'SELFTEST OK\n' + log.join('\n');
+        if (parent !== window) parent.postMessage(out.textContent, '*'); // lets a narrow iframe harness read the result
       } catch (e) { out.textContent = 'SELFTEST FAIL ' + e.message + '\n' + (e.stack || '') + '\n' + log.join('\n'); }
     })();
   } else show('title');
