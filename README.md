@@ -19,6 +19,7 @@ screenshot.
 | 8 | 2026-11-07 | [Crash Box](builds/2026-11-07-crash-box/) | Game (drivetrain simulation, double-clutching, procedural engine audio) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-07-crash-box/) |
 | 9 | 2026-11-08 | [Reflow](builds/2026-11-08-reflow/) | Game (Lemmings on a live HTML page, CSS as the tool) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-08-reflow/) |
 | 11 | 2026-11-10 | [Night Funnel](builds/2026-11-10-night-funnel/) | Game (night drone interception, honest EEGS gun funnel from flight history) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-10-night-funnel/) |
+| 12 | 2026-11-11 | [Bare Earth](builds/2026-11-11-bare-earth/) | Game (lidar archaeology, ground filtering, terrain visualisation) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-11-bare-earth/) |
 
 ## Rules of the house
 - Nothing basic: each build needs a distinctive idea, not a clone with a coat of paint.
