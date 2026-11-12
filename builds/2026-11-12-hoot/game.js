@@ -360,6 +360,9 @@
     startLevel(0, null); closeModal(); S.sel = 0; tapSlot(5); tapSlot(5);
     ck('single HOOT = C3', S.ev.notes[0].inTune && Math.abs(S.ev.notes[0].cents) < 0.01);
     undo(); ck('undo reopens', !S.layout[0].closed);
+    startLevel(4, null); closeModal();
+    const rc = id => { const r = $(id).getBoundingClientRect(); return id + '=' + [r.left, r.top, r.width, r.height].map(Math.round).join(','); };
+    ck('layout', true, innerWidth + 'x' + innerHeight + ' ' + ['ring', 'cards', 'scope', 'btnTune'].map(rc).join(' ') + ' scrollW=' + document.documentElement.scrollWidth + ' playScrollH=' + document.querySelector('.play').scrollHeight + '/' + document.querySelector('.play').clientHeight);
     ck('time', true, Math.round(performance.now() - t0) + 'ms');
     const pre = $('selftest'); pre.classList.remove('hidden'); pre.textContent = out.join('\n') + '\nSELFTEST ' + (fail ? 'FAILED ' + fail : 'OK');
     document.title = fail ? 'SELFTEST FAILED' : 'SELFTEST OK';
