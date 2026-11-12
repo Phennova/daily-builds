@@ -20,6 +20,7 @@ screenshot.
 | 9 | 2026-11-08 | [Reflow](builds/2026-11-08-reflow/) | Game (Lemmings on a live HTML page, CSS as the tool) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-08-reflow/) |
 | 11 | 2026-11-10 | [Night Funnel](builds/2026-11-10-night-funnel/) | Game (night drone interception, honest EEGS gun funnel from flight history) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-10-night-funnel/) |
 | 12 | 2026-11-11 | [Bare Earth](builds/2026-11-11-bare-earth/) | Game (lidar archaeology, ground filtering, terrain visualisation) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-11-bare-earth/) |
+| 13 | 2026-11-12 | [Hoot](builds/2026-11-12-hoot/) | Game (1951 delay-line computer music, number-theory packing, WebAudio click trains) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-12-hoot/) |
 
 ## Rules of the house
 - Nothing basic: each build needs a distinctive idea, not a clone with a coat of paint.
