@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#14110d">
+<title>HOOT - program a 1951 delay-line computer to play music</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <section id="title" class="screen">
+    <canvas id="titleRing" aria-hidden="true"></canvas>
+    <div class="titlebox">
+      <h1>HOOT</h1>
+      <p class="sub">There is no note command.<br>Only a ring of mercury, and a speaker that clicks.</p>
+      <button id="btnPlay" class="big">Start</button>
+      <button id="btnHelp" class="ghost">How it works</button>
+      <p class="fine">1951 &middot; a toy delay-line computer &middot; best with sound on</p>
+    </div>
+  </section>
+
+  <section id="select" class="screen hidden">
+    <header class="bar"><button class="ghost sm" data-go="title">&larr; Title</button><h2>Programs</h2><button class="ghost sm mute" aria-label="Mute">&#9835;</button></header>
+    <div id="levels" class="levels"></div>
+    <p class="fine pad">Stars: 1 in tune &middot; 2 steady (jitter at the solver's par) &middot; 3 least total wobble.</p>
+  </section>
+
+  <section id="game" class="screen hidden">
+    <header class="bar">
+      <button class="ghost sm" id="btnMenu">&larr; Menu</button>
+      <h2 id="lvName">Level</h2>
+      <button class="ghost sm" id="btnBrief" aria-label="Briefing">?</button>
+      <button class="ghost sm mute" aria-label="Mute">&#9835;</button>
+    </header>
+    <div class="play">
+      <div class="ringwrap">
+        <canvas id="ring" aria-label="Mercury delay line with 24 words"></canvas>
+        <div id="toast" class="toast"></div>
+      </div>
+      <div class="side">
+        <div id="cards" class="cards"></div>
+        <canvas id="scope" aria-label="Click train of the selected note"></canvas>
+        <div id="scopeCap" class="fine cap"></div>
+        <div class="btns">
+          <button id="btnUndo" class="ghost">Undo</button>
+          <button id="btnClear" class="ghost">Clear note</button>
+          <button id="btnHint" class="ghost">Ghosts</button>
+          <button id="btnNote" class="ghost">&#9654; Note</button>
+          <button id="btnTune" class="big" disabled>&#9654; Play tune</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="card" id="modalCard"></div>
+  </div>
+</div>
+<pre id="selftest" class="hidden"></pre>
+<script src="sim.js"></script>
+<script src="audio.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
