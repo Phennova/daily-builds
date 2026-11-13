@@ -57,6 +57,10 @@ you thought of but did not build.
 - phase-connect | game | pulsar timing on the new 7.9-min long-period transient GPM J0715-1141 (Nature Astronomy, 2026-11-12; white dwarf + Sun-like star, 1.3-day orbit): dedisperse the sweep, fold, then phase-connect TOAs across gaps by counting turns and fit P, Pdot and the orbit's Roemer delay until residuals go white; eclipse behind a prominence | dedispersion, epoch folding, timing residuals | 4/4/4 on 2026-11-12 (another "tune params" loop; space it from pregroove/bare-earth)
 - gallop | game | Timsort tribute (Tim Peters' death announced 2026-11-11): you are the merge step, find natural runs, pick minrun, decide when to gallop; scored on comparisons vs CPython | algorithm game | 3/3/5 on 2026-11-12
 - splatter-perl | toy | fling paint, a tiny Perl-ish tokenizer judges whether the splatter is a valid program (cf. "93% of paint splatters are valid Perl", HN 2026-11-12) | OCR-free glyph splats, parser | 3/3/3 on 2026-11-12
+- doomsday-desk | game | "beat the prophets": famous forecasts (von Foerster's 1960 Doomsday hyperbola for 13 Nov 2026, Hubbert 1956, Moore 1965, Keeling CO2, Simon-Ehrlich wager) given only the forecaster's data; choose a model family, commit a calibrated interval, proper scoring rule, then reality replays | real historical data, scoring rules, data viz | 4/4/4 on 2026-11-13 (date hook expired; still fine)
+- pattern-of-life | game | dystopian ALPR town (Flock cameras, Guardian 2026-11-13): run errands while a live inference engine guesses your home, work and associates from plate reads; keep it wrong | inference sim, privacy education | 4/3/4 on 2026-11-13
+- stitch-out | game | embroidery digitising: order stitches, underlay, pull compensation, jump/trim budget; the machine sews it with thread-sheen rendering (cf. Show HN zigzag, 2026-11-12) | path planning, canvas shading | 3/4/2 on 2026-11-13
+- (blink-survey is topical again: 280-year-orbit dwarf planet candidate, HN 2026-11-12)
 - (reentry-footprint could also cover the Nov 2026 "save Hubble" reboost story: plan a reboost before decay)
 
 ## Interests of the user (use for inspiration, not as a straitjacket)
