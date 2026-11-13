@@ -77,6 +77,7 @@ small { color: var(--dim); }
 .badge.ok { color: var(--ok); border-color: #2c5a40; background: #13241b; }
 .badge.bad { color: var(--bad); border-color: #5e2f2a; background: #261615; }
 .badge.na { opacity: .7; }
+.tnote { font-size: 12px; color: var(--dim); align-self: center; }
 #caps { display: flex; flex-direction: column; gap: 4px; max-height: 52vh; overflow: auto; padding-right: 2px; overscroll-behavior: contain; }
 .cap { display: grid; grid-template-columns: 26px 1fr; gap: 6px; padding: 6px 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
 .cap.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
@@ -186,4 +187,11 @@ small { color: var(--dim); }
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+}
+@media (pointer: coarse) {
+  button.small { min-height: 34px; padding: 6px 11px; }
+  .addrow button { min-height: 38px; padding: 6px 11px; }
+  .addrow { gap: 7px; }
+  .tools label { padding: 8px 2px; }
+  input[type=checkbox] { width: 18px; height: 18px; vertical-align: -4px; }
 }

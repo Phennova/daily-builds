@@ -94,7 +94,8 @@
     if (fs.filter(f => f.type === 'DATA').length > 1) out.push('only one DATA field can have a variable length');
     fs.forEach((f, i) => {
       if (f.type === 'LEN' || f.type === 'CHECK') {
-        if (!(f.from >= 0 && f.to >= f.from && f.to < fs.length)) out.push(`field ${i + 1} (${f.type}) covers an invalid range`);
+        if (f.type === 'LEN' && f.from >= fs.length && f.from === i + 1) out.push(`field ${i + 1} (LEN) counts the fields after it: add them next`);
+        else if (!(f.from >= 0 && f.to >= f.from && f.to < fs.length)) out.push(`field ${i + 1} (${f.type}) covers an invalid range`);
         else if (f.type === 'CHECK' && f.from <= i && i <= f.to) out.push(`field ${i + 1}: a checksum cannot cover itself`);
       }
     });

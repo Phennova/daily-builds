@@ -169,7 +169,7 @@
     const types = fs.map(f => f.type).join(' ');
     return [
       ['Press buttons in the AirLux app. Each press puts a frame on the wire (\u2192 to the device, \u2190 its reply). Capture at least 6.', appTx >= 6],
-      ['Every frame starts with the same byte. In <b>Your dissector</b>, add a <b>MAGIC</b> field (1 byte).', fs.length > 0 && fs[0].type === 'MAGIC' && t.magic[0] === t.magic[1] && t.magic[1] > 0],
+      ['Every frame starts with the same byte. In <b>Your dissector</b>, add a <b>MAGIC</b> field (1 byte).', fs.length > 0 && fs[0].type === 'MAGIC' && LO.fieldWidth(fs[0]) === 1],
       ['Add the rest of the layout in order: <b>LEN</b>, <b>CMD</b>, <b>DATA</b> (the variable part), <b>CHECK</b>. When it fits, every frame is coloured.', /MAGIC LEN CMD DATA CHECK/.test(types) && t.fit === t.used],
       ['Tap the LEN chip and choose which fields it counts until LEN is \u2713 on every frame.', t.len[1] > 0 && t.len[0] === t.len[1] && t.fit === t.used],
       ['Tap the CHECK chip: pick an algorithm and the bytes it covers until CHK is \u2713 everywhere.', t.chk[1] > 0 && t.chk[0] === t.chk[1] && t.fit === t.used],
@@ -210,6 +210,7 @@
       h += badge('FIT', [t.fit, t.used]);
       h += badge('MAGIC', t.magic) + badge('LEN', t.len) + badge('CHK', t.chk) + badge('SEQ', t.seq);
       if (t.allGood && t.len[1] + t.chk[1] > 0) h += '<span class="badge ok">explains every frame</span>';
+      else if (t.used && !t.fit) h += `<span class="tnote">${S.dis.fields.some(f => f.type === 'DATA') ? 'no frame is long enough for this many fixed bytes' : `no frame is exactly ${S.dis.fields.reduce((a, f) => a + LO.fieldWidth(f), 0)} bytes: add the remaining fields (DATA takes the variable part)`}</span>`;
     }
     $('totals').innerHTML = h;
     $('tabBadge').textContent = S.unseen ? `+${S.unseen}` : '';
