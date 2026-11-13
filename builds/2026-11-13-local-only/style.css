@@ -56,6 +56,8 @@ small { color: var(--dim); }
 #appBtns button.premium { opacity: .6; }
 #appBtns button.premium::after { content: " \1F512"; font-size: 11px; }
 #appBtns button.flash { border-color: var(--accent); }
+#totals.proved .badge.ok { animation: proved .9s ease-out; }
+@keyframes proved { 0% { box-shadow: 0 0 0 0 rgba(80,200,120,.75); transform: scale(1.08); } 100% { box-shadow: 0 0 0 10px rgba(80,200,120,0); transform: scale(1); } }
 
 #goals .goal { display: flex; gap: 8px; align-items: flex-start; padding: 3px 0; }
 #goals .goal i { flex: none; width: 16px; height: 16px; margin-top: 2px; border: 1.5px solid var(--faint); border-radius: 4px; font-style: normal; font-size: 12px; line-height: 13px; text-align: center; }

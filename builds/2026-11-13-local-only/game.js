@@ -66,7 +66,7 @@
     S.li = li; run.cur = li; save();
     S.lab = LO.createLab(li, run.seed);
     S.dis = run.dis[li] ? JSON.parse(JSON.stringify(run.dis[li])) : blankDis();
-    S.sel = -1; S.selField = -1; S.ticks = 0; S.hintsShown = 0; S.midnight = false; S.completeShown = false;
+    S.sel = -1; S.selField = -1; S.ticks = 0; S.hintsShown = 0; S.midnight = false; S.completeShown = false; S.provedShown = false;
     S.forge = { cmd: '', data: '', seq: '', raw: '' };
     $('optRaw').checked = false;
     $('console').innerHTML = '';
@@ -326,7 +326,15 @@
     if (f.type === 'CHECK') extra = ' ' + LO.ALGOS[f.algo].name.replace('CRC-', 'CRC') + (LO.ALGOS[f.algo].w === 2 ? ' ' + (f.endian || 'BE') : '') + ` ${f.from + 1}..${f.to + 1}`;
     return `<small>${i + 1} \u00b7 ${w} byte${w === 1 ? '' : 's'}</small><b>${f.type}</b><small>${esc(extra)}</small>`;
   }
-  function changed() { persistDis(); revalidate(); renderTotals(); renderCaps(); renderInspect(); renderDis(); renderForge(); renderWalk(); }
+  function changed() { persistDis(); revalidate(); renderTotals(); renderCaps(); renderInspect(); renderDis(); renderForge(); renderWalk(); proved(); }
+  // the moment a hypothesis explains every captured frame (once per level visit)
+  function proved() {
+    const t = S.v.tot;
+    if (S.provedShown || !t.allGood || t.len[1] + t.chk[1] === 0) return;
+    S.provedShown = true;
+    SFX.goal(); toast(`Hypothesis holds: your dissector explains all ${t.used} frames. Now forge.`, 3400);
+    const box = $('totals'); box.classList.remove('proved'); void box.offsetWidth; box.classList.add('proved');
+  }
   function renderDis() {
     const box = $('dis'); box.innerHTML = '';
     const fs = S.dis.fields;
@@ -358,7 +366,7 @@
         if (k === null) { inp.style.borderColor = 'var(--bad)'; return; }
         inp.style.borderColor = '';
         S.dis.xorKey = k.length ? k : null;
-        persistDis(); revalidate(); renderTotals(); renderCaps(); renderInspect(); renderForge();
+        persistDis(); revalidate(); renderTotals(); renderCaps(); renderInspect(); renderForge(); proved();
       };
       x.appendChild(inp);
       box.appendChild(x);
