@@ -21,6 +21,7 @@ screenshot.
 | 11 | 2026-11-10 | [Night Funnel](builds/2026-11-10-night-funnel/) | Game (night drone interception, honest EEGS gun funnel from flight history) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-10-night-funnel/) |
 | 12 | 2026-11-11 | [Bare Earth](builds/2026-11-11-bare-earth/) | Game (lidar archaeology, ground filtering, terrain visualisation) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-11-bare-earth/) |
 | 13 | 2026-11-12 | [Hoot](builds/2026-11-12-hoot/) | Game (1951 delay-line computer music, number-theory packing, WebAudio click trains) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-12-hoot/) |
+| 14 | 2026-11-13 | [Local Only](builds/2026-11-13-local-only/) | Game (protocol reverse engineering, dissector-as-forger, right to repair) | [Play](https://phennova.github.io/daily-builds/builds/2026-11-13-local-only/) |
 
 ## Rules of the house
 - Nothing basic: each build needs a distinctive idea, not a clone with a coat of paint.
